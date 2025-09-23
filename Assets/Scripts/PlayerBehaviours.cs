@@ -12,6 +12,9 @@ public class PlayerBehaviours : MonoBehaviour
     private Animator anim;
     private Vector2 lastMoveDirection;
     private bool facingLeft = true;
+
+    [Header("Other Scripts")]
+    [SerializeField] private FinalPuzzleHandler finalPuzzle;
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -31,17 +34,27 @@ public class PlayerBehaviours : MonoBehaviour
 
     void PlayerMovement() 
     {
-        float moveX = Input.GetAxisRaw("Horizontal");
-        float moveY = Input.GetAxisRaw("Vertical");
-
-        if ((moveX == 0 && moveY == 0) && (input.x != 0 || input.y != 0))
+        if (!finalPuzzle.isPuzzleActive)
         {
-            lastMoveDirection = input;
-        }
+            float moveX = Input.GetAxisRaw("Horizontal");
+            float moveY = Input.GetAxisRaw("Vertical");
 
-        input.x = Input.GetAxisRaw("Horizontal");
-        input.y = Input.GetAxisRaw("Vertical");
-        input.Normalize();
+            if ((moveX == 0 && moveY == 0) && (input.x != 0 || input.y != 0))
+            {
+                lastMoveDirection = input;
+            }
+
+            input.x = Input.GetAxisRaw("Horizontal");
+            input.y = Input.GetAxisRaw("Vertical");
+            input.Normalize();
+        }
+        else if (!finalPuzzle.puzzleComplete)
+            speed = 0;
+
+
+        if (finalPuzzle.puzzleComplete && speed != 5)
+                speed = 5;
+
     }
 
     void Animate() 

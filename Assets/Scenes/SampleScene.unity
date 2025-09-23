@@ -920,7 +920,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ca276c8f2bbc5804b84ff826bbe642f2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  handler: {fileID: 1995135139}
   ui: {fileID: 1771449041}
+  playerInside: 0
 --- !u!58 &1426964381
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -1103,6 +1105,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   speed: 5
+  finalPuzzle: {fileID: 1995135139}
 --- !u!95 &1628020180
 Animator:
   serializedVersion: 7
@@ -1747,7 +1750,9 @@ MonoBehaviour:
   feedbackTxt: {fileID: 1658964545}
   progress: {fileID: 1870323836}
   firstTime: 0
-  ui: {fileID: 0}
+  puzzleComplete: 0
+  isPuzzleActive: 0
+  ui: {fileID: 1771449041}
 --- !u!1 &2019086878
 GameObject:
   m_ObjectHideFlags: 0

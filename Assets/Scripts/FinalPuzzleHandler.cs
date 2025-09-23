@@ -1,5 +1,6 @@
 using System.Collections;
 using TMPro;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -9,11 +10,11 @@ public class FinalPuzzleHandler : MonoBehaviour
     public TMP_Text feedbackTxt;
     public Slider progress;
     public bool firstTime;
+    public bool puzzleComplete;
+    public bool isPuzzleActive;
     public GameObject ui;
     private string[] _buttons = { "E", "F", "J", "G", "H", "R", "T" };
-    private float timeLeft;
-    private bool isPuzzleActive;
-    private bool puzzleCompelte;
+    private float timeLeft; 
     private Coroutine puzzleCoroutine;
     private string currentButton;
     private bool waitingForInput;
@@ -23,12 +24,12 @@ public class FinalPuzzleHandler : MonoBehaviour
         firstTime = true;
         progress.value = 0f;
         isPuzzleActive = false;
-        puzzleCompelte = false;
+        puzzleComplete = false;
     }
 
     void Update()
     {
-        if (gameObject.activeSelf && !isPuzzleActive)
+        if (gameObject.activeSelf && !isPuzzleActive && !puzzleComplete)
         {
             isPuzzleActive = true;
             puzzleCoroutine = StartCoroutine(FinalPuzzle());
@@ -42,15 +43,15 @@ public class FinalPuzzleHandler : MonoBehaviour
             }
         }
 
-        if (puzzleCompelte)
+        if (puzzleComplete)
             StartCoroutine(HideUI());
-    }
+    }    
 
     IEnumerator FinalPuzzle()
     {
         int lastNumber = -1;
         bool missed = false;
-        for (int i = 0; i < 10; i++)
+        while(progress.value != 1)
         {
             if (!firstTime)
                 yield return new WaitForSeconds(.5f);
@@ -131,12 +132,10 @@ public class FinalPuzzleHandler : MonoBehaviour
 
             yield return new WaitForSeconds(.5f);
         }
-
-        // Puzzle completed
-        isPuzzleActive = false;
-        puzzleCompelte = true;
-        feedbackTxt.SetText("Completou!");
-        StopAllCoroutines();
+            isPuzzleActive = false;
+            puzzleComplete = true;
+            feedbackTxt.SetText("Completou!");
+            StopCoroutine(puzzleCoroutine);
     }
 
     void SubtractOne()
