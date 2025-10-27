@@ -1,23 +1,40 @@
+// FinalPuzzleHandler.cs (Updated)
 using System.Collections;
 using TMPro;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
+using Photon.Pun;
 
-public class FinalPuzzleHandler : MonoBehaviour
+public class FinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObservable
 {
+    [Header("Texts")]
     public TMP_Text buttonTxt;
     public TMP_Text feedbackTxt;
+    [Header("Slider Components")]
     public Slider progress;
+    public Image fillImage;
+    [Header("First time checker")]
     public bool firstTime;
-    public bool puzzleComplete;
-    public bool isPuzzleActive;
+    [Header("UI")]
     public GameObject ui;
+    [Header("Verifiers")]
+    public bool isPuzzleActive;
+    public bool puzzleComplete;
+
     private string[] _buttons = { "E", "F", "J", "G", "H", "R", "T" };
-    private float timeLeft; 
+    private float timeLeft;
     private Coroutine puzzleCoroutine;
     private string currentButton;
     private bool waitingForInput;
+
+    // Colors
+    Color orange = new Color(249f / 255f, 129f / 255f, 40f / 255f);
+    Color yellowGreen = new Color(154f / 255f, 205f / 255f, 50f / 255f);
+
+    // Network synchronization
+    private float syncedProgress = 0f;
+    private bool syncedComplete = false;
+    private bool syncedActive = false;
 
     private void Start()
     {
@@ -25,33 +42,45 @@ public class FinalPuzzleHandler : MonoBehaviour
         progress.value = 0f;
         isPuzzleActive = false;
         puzzleComplete = false;
+
+        // Only enable for Player 1
+        if (PhotonNetwork.LocalPlayer.ActorNumber != 1)
+        {
+            enabled = false;
+            return;
+        }
     }
 
     void Update()
     {
-        if (gameObject.activeSelf && !isPuzzleActive && !puzzleComplete)
+        // Only Player 1 can activate and control this puzzle
+        if (!photonView.IsMine || PhotonNetwork.LocalPlayer.ActorNumber != 1) return;
+
+        if (!isPuzzleActive && !puzzleComplete && ShouldActivatePuzzle())
         {
             isPuzzleActive = true;
+            syncedActive = true;
             puzzleCoroutine = StartCoroutine(FinalPuzzle());
-        }
-        else if (!gameObject.activeSelf && isPuzzleActive)
-        {
-            isPuzzleActive = false;
-            if (puzzleCoroutine != null)
-            {
-                StopCoroutine(puzzleCoroutine);
-            }
         }
 
         if (puzzleComplete)
             StartCoroutine(HideUI());
-    }    
+
+        UpdateProgressColor();
+    }
+
+    bool ShouldActivatePuzzle()
+    {
+        // Add your activation condition here (e.g., player in trigger zone)
+        return true; // Replace with actual condition
+    }
 
     IEnumerator FinalPuzzle()
     {
         int lastNumber = -1;
         bool missed = false;
-        while(progress.value != 1)
+
+        while (syncedProgress < 1f && isPuzzleActive)
         {
             if (!firstTime)
                 yield return new WaitForSeconds(.5f);
@@ -59,12 +88,12 @@ public class FinalPuzzleHandler : MonoBehaviour
                 firstTime = false;
 
             int buttonIndex = Random.Range(0, 7);
-            if(lastNumber != -1)
-                while(buttonIndex == lastNumber)
+            if (lastNumber != -1)
+                while (buttonIndex == lastNumber)
                     buttonIndex = Random.Range(0, 7);
 
             currentButton = _buttons[buttonIndex];
-            buttonTxt.SetText("[" + currentButton + "]");
+            photonView.RPC("UpdateButtonText", RpcTarget.All, "[" + currentButton + "]");
             lastNumber = buttonIndex;
 
             timeLeft = 3f;
@@ -92,50 +121,86 @@ public class FinalPuzzleHandler : MonoBehaviour
                         waitingForInput = false;
                     }
                 }
-                    yield return null;
+                yield return null;
             }
 
             CancelInvoke("SubtractOne");
 
             if (success)
             {
-                progress.value += 0.1f;
-                buttonTxt.SetText("");
-                int resposta = Random.Range(0,3);
-                feedbackTxt.gameObject.SetActive(true);
-                switch (resposta) 
+                syncedProgress += 0.1f;
+                photonView.RPC("UpdateProgress", RpcTarget.All, syncedProgress);
+                photonView.RPC("UpdateButtonText", RpcTarget.All, "");
+
+                int resposta = Random.Range(0, 3);
+                string feedback = "";
+                switch (resposta)
                 {
-                    case 0: feedbackTxt.SetText("Boa!");
-                        break;
-
-                    case 1:
-                        feedbackTxt.SetText("Certo!");
-                        break;
-
-                    case 2:
-                        feedbackTxt.SetText("Isso!");
-                        break;
+                    case 0: feedback = "Boa!"; break;
+                    case 1: feedback = "Certo!"; break;
+                    case 2: feedback = "Isso!"; break;
                 }
-                StartCoroutine(HideFeedbackText());
+                photonView.RPC("ShowFeedback", RpcTarget.All, feedback);
             }
             else
             {
-                progress.value = Mathf.Max(0f, progress.value - 0.1f);
-                buttonTxt.SetText("");
-                feedbackTxt.gameObject.SetActive(true);
-                if(!missed)
-                    feedbackTxt.SetText("Muito Lento...");
-                else
-                    feedbackTxt.SetText("Errou...");
-                StartCoroutine(HideFeedbackText());
+                syncedProgress = Mathf.Max(0f, syncedProgress - 0.1f);
+                photonView.RPC("UpdateProgress", RpcTarget.All, syncedProgress);
+                photonView.RPC("UpdateButtonText", RpcTarget.All, "");
+
+                string feedback = !missed ? "Muito Lento..." : "Errou...";
+                photonView.RPC("ShowFeedback", RpcTarget.All, feedback);
             }
 
             yield return new WaitForSeconds(.5f);
         }
+
+        if (syncedProgress >= 1f)
+        {
             isPuzzleActive = false;
+            syncedActive = false;
+            syncedComplete = true;
             puzzleComplete = true;
-            feedbackTxt.SetText("Completou!");
+            photonView.RPC("CompletePuzzle", RpcTarget.All);
+
+            // Notify coordinator
+            PuzzleCoordinator.Instance.photonView.RPC("ReportPuzzleComplete", RpcTarget.All, 1);
+        }
+
+        if (puzzleCoroutine != null)
+        {
             StopCoroutine(puzzleCoroutine);
+            puzzleCoroutine = null;
+        }
+    }
+
+    [PunRPC]
+    void UpdateProgress(float newProgress)
+    {
+        progress.value = newProgress;
+        syncedProgress = newProgress;
+    }
+
+    [PunRPC]
+    void UpdateButtonText(string text)
+    {
+        buttonTxt.SetText(text);
+    }
+
+    [PunRPC]
+    void ShowFeedback(string feedback)
+    {
+        feedbackTxt.gameObject.SetActive(true);
+        feedbackTxt.SetText(feedback);
+        StartCoroutine(HideFeedbackText());
+    }
+
+    [PunRPC]
+    void CompletePuzzle()
+    {
+        puzzleComplete = true;
+        syncedComplete = true;
+        feedbackTxt.SetText("Completou!");
     }
 
     void SubtractOne()
@@ -148,19 +213,32 @@ public class FinalPuzzleHandler : MonoBehaviour
         }
     }
 
-    IEnumerator HideFeedbackText() 
+    IEnumerator HideFeedbackText()
     {
         yield return new WaitForSeconds(1f);
         feedbackTxt.gameObject.SetActive(false);
     }
 
-    IEnumerator HideUI() 
+    IEnumerator HideUI()
     {
         yield return new WaitForSeconds(1.5f);
         ui.SetActive(false);
     }
 
-    // Helper method to convert string to KeyCode
+    void UpdateProgressColor()
+    {
+        if (progress.value <= .2f)
+            fillImage.color = Color.red;
+        else if (progress.value > .2f && progress.value <= .4f)
+            fillImage.color = orange;
+        else if (progress.value > .4f && progress.value <= .6f)
+            fillImage.color = Color.yellow;
+        else if (progress.value > .6f && progress.value <= .8f)
+            fillImage.color = yellowGreen;
+        else
+            fillImage.color = Color.green;
+    }
+
     private KeyCode GetKeyCodeFromString(string keyString)
     {
         switch (keyString.ToUpper())
@@ -173,6 +251,26 @@ public class FinalPuzzleHandler : MonoBehaviour
             case "R": return KeyCode.R;
             case "T": return KeyCode.T;
             default: return KeyCode.None;
+        }
+    }
+
+    public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
+    {
+        if (stream.IsWriting)
+        {
+            stream.SendNext(syncedProgress);
+            stream.SendNext(syncedComplete);
+            stream.SendNext(syncedActive);
+        }
+        else
+        {
+            syncedProgress = (float)stream.ReceiveNext();
+            syncedComplete = (bool)stream.ReceiveNext();
+            syncedActive = (bool)stream.ReceiveNext();
+
+            progress.value = syncedProgress;
+            puzzleComplete = syncedComplete;
+            isPuzzleActive = syncedActive;
         }
     }
 }

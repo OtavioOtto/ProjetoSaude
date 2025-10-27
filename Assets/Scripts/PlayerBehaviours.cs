@@ -1,7 +1,8 @@
-using System.Runtime.CompilerServices;
+// PlayerBehaviours.cs (Updated)
 using UnityEngine;
+using Photon.Pun;
 
-public class PlayerBehaviours : MonoBehaviour
+public class PlayerBehaviours : MonoBehaviourPunCallbacks
 {
     [Header("Player Movement")]
     public float speed = 5f;
@@ -13,28 +14,61 @@ public class PlayerBehaviours : MonoBehaviour
     private Vector2 lastMoveDirection;
     private bool facingLeft = true;
 
-    [Header("Other Scripts")]
+    [Header("Puzzle References")]
     [SerializeField] private FinalPuzzleHandler finalPuzzle;
+    [SerializeField] private SecondPlayerFinalPuzzleHandler secondPlayerFinalPuzzle;
+
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
+
+        // Only enable for local player
+        if (!photonView.IsMine)
+        {
+            enabled = false;
+            return;
+        }
+
+        // Find puzzle handlers based on player number
+        if (PhotonNetwork.LocalPlayer.ActorNumber == 1)
+        {
+            finalPuzzle = FindObjectOfType<FinalPuzzleHandler>();
+        }
+        else
+        {
+            secondPlayerFinalPuzzle = FindObjectOfType<SecondPlayerFinalPuzzleHandler>();
+        }
     }
+
     void Update()
     {
         PlayerMovement();
         Animate();
-        if((input.x < 0 && !facingLeft) || (input.x  > 0 && facingLeft))
+        if ((input.x < 0 && !facingLeft) || (input.x > 0 && facingLeft))
             Flip();
     }
+
     void FixedUpdate()
     {
         rb.linearVelocity = input * speed;
     }
 
-    void PlayerMovement() 
+    void PlayerMovement()
     {
-        if (!finalPuzzle.isPuzzleActive)
+        // Check if current player's puzzle is active
+        bool myPuzzleActive = false;
+
+        if (PhotonNetwork.LocalPlayer.ActorNumber == 1 && finalPuzzle != null)
+        {
+            myPuzzleActive = finalPuzzle.isPuzzleActive;
+        }
+        else if (secondPlayerFinalPuzzle != null)
+        {
+            myPuzzleActive = secondPlayerFinalPuzzle.isPuzzleActive;
+        }
+
+        if (!myPuzzleActive)
         {
             float moveX = Input.GetAxisRaw("Horizontal");
             float moveY = Input.GetAxisRaw("Vertical");
@@ -48,16 +82,14 @@ public class PlayerBehaviours : MonoBehaviour
             input.y = Input.GetAxisRaw("Vertical");
             input.Normalize();
         }
-        else if (!finalPuzzle.puzzleComplete)
-            speed = 0;
-
-
-        if (finalPuzzle.puzzleComplete && speed != 5)
-                speed = 5;
-
+        else
+        {
+            // Puzzle is active - stop movement
+            input = Vector2.zero;
+        }
     }
 
-    void Animate() 
+    void Animate()
     {
         anim.SetFloat("MoveX", input.x);
         anim.SetFloat("MoveY", input.y);
@@ -66,7 +98,7 @@ public class PlayerBehaviours : MonoBehaviour
         anim.SetFloat("LastMoveY", lastMoveDirection.y);
     }
 
-    void Flip() 
+    void Flip()
     {
         Vector3 scale = transform.localScale;
         scale.x *= -1;
