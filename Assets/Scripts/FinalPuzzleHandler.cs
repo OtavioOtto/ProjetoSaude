@@ -1,4 +1,4 @@
-// FinalPuzzleHandler.cs (Updated)
+// FinalPuzzleHandler.cs (Updated - focus on the Update method)
 using System.Collections;
 using TMPro;
 using UnityEngine;
@@ -36,6 +36,9 @@ public class FinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObservable
     private bool syncedComplete = false;
     private bool syncedActive = false;
 
+    // Reference to the collider that activates this puzzle
+    private FinalPuzzleCollider activationCollider;
+
     private void Start()
     {
         firstTime = true;
@@ -43,18 +46,35 @@ public class FinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObservable
         isPuzzleActive = false;
         puzzleComplete = false;
 
+        // Find the activation collider
+        activationCollider = FindObjectOfType<FinalPuzzleCollider>();
+
         // Only enable for Player 1
         if (PhotonNetwork.LocalPlayer.ActorNumber != 1)
         {
             enabled = false;
             return;
         }
+
+        Debug.Log("FinalPuzzleHandler initialized for Player 1");
     }
 
     void Update()
     {
         // Only Player 1 can activate and control this puzzle
         if (!photonView.IsMine || PhotonNetwork.LocalPlayer.ActorNumber != 1) return;
+
+        // Add null check for activationCollider
+        if (activationCollider == null)
+        {
+            // Try to find it again if it's null
+            activationCollider = FindObjectOfType<FinalPuzzleCollider>();
+            if (activationCollider == null)
+            {
+                Debug.LogError("FinalPuzzleCollider not found!");
+                return;
+            }
+        }
 
         if (!isPuzzleActive && !puzzleComplete && ShouldActivatePuzzle())
         {
@@ -71,10 +91,11 @@ public class FinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObservable
 
     bool ShouldActivatePuzzle()
     {
-        // Add your activation condition here (e.g., player in trigger zone)
-        return true; // Replace with actual condition
+        // Use the collider to determine if we should activate
+        return activationCollider != null && activationCollider.playerInside;
     }
 
+    // Rest of your FinalPuzzleHandler methods remain the same...
     IEnumerator FinalPuzzle()
     {
         int lastNumber = -1;
@@ -184,15 +205,19 @@ public class FinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObservable
     [PunRPC]
     void UpdateButtonText(string text)
     {
-        buttonTxt.SetText(text);
+        if (buttonTxt != null)
+            buttonTxt.SetText(text);
     }
 
     [PunRPC]
     void ShowFeedback(string feedback)
     {
-        feedbackTxt.gameObject.SetActive(true);
-        feedbackTxt.SetText(feedback);
-        StartCoroutine(HideFeedbackText());
+        if (feedbackTxt != null)
+        {
+            feedbackTxt.gameObject.SetActive(true);
+            feedbackTxt.SetText(feedback);
+            StartCoroutine(HideFeedbackText());
+        }
     }
 
     [PunRPC]
@@ -200,7 +225,8 @@ public class FinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObservable
     {
         puzzleComplete = true;
         syncedComplete = true;
-        feedbackTxt.SetText("Completou!");
+        if (feedbackTxt != null)
+            feedbackTxt.SetText("Completou!");
     }
 
     void SubtractOne()
@@ -216,27 +242,32 @@ public class FinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObservable
     IEnumerator HideFeedbackText()
     {
         yield return new WaitForSeconds(1f);
-        feedbackTxt.gameObject.SetActive(false);
+        if (feedbackTxt != null)
+            feedbackTxt.gameObject.SetActive(false);
     }
 
     IEnumerator HideUI()
     {
         yield return new WaitForSeconds(1.5f);
-        ui.SetActive(false);
+        if (ui != null)
+            ui.SetActive(false);
     }
 
     void UpdateProgressColor()
     {
-        if (progress.value <= .2f)
-            fillImage.color = Color.red;
-        else if (progress.value > .2f && progress.value <= .4f)
-            fillImage.color = orange;
-        else if (progress.value > .4f && progress.value <= .6f)
-            fillImage.color = Color.yellow;
-        else if (progress.value > .6f && progress.value <= .8f)
-            fillImage.color = yellowGreen;
-        else
-            fillImage.color = Color.green;
+        if (fillImage != null && progress != null)
+        {
+            if (progress.value <= .2f)
+                fillImage.color = Color.red;
+            else if (progress.value > .2f && progress.value <= .4f)
+                fillImage.color = orange;
+            else if (progress.value > .4f && progress.value <= .6f)
+                fillImage.color = Color.yellow;
+            else if (progress.value > .6f && progress.value <= .8f)
+                fillImage.color = yellowGreen;
+            else
+                fillImage.color = Color.green;
+        }
     }
 
     private KeyCode GetKeyCodeFromString(string keyString)

@@ -39,11 +39,11 @@ public class PlayerBehaviours : MonoBehaviourPunCallbacks, IPunObservable
         // Find puzzle handlers based on player number
         if (PhotonNetwork.LocalPlayer.ActorNumber == 1)
         {
-            finalPuzzle = FindObjectOfType<FinalPuzzleHandler>();
+            finalPuzzle = FindFirstObjectByType<FinalPuzzleHandler>();
         }
         else
         {
-            secondPlayerFinalPuzzle = FindObjectOfType<SecondPlayerFinalPuzzleHandler>();
+            secondPlayerFinalPuzzle = FindFirstObjectByType<SecondPlayerFinalPuzzleHandler>();
         }
     }
 

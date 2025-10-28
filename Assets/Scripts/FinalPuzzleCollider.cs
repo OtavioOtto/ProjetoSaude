@@ -8,6 +8,27 @@ public class FinalPuzzleCollider : MonoBehaviourPunCallbacks
     public GameObject ui;
     public bool playerInside;
 
+    private void Start()
+    {
+        // Ensure we have a reference to the handler
+        if (handler == null)
+        {
+            handler = FindObjectOfType<FinalPuzzleHandler>();
+        }
+
+        if (handler == null)
+        {
+            Debug.LogError("FinalPuzzleHandler not found! Make sure it's in the scene.");
+        }
+
+        // Only enable for Player 1
+        if (PhotonNetwork.LocalPlayer.ActorNumber != 1)
+        {
+            enabled = false;
+            return;
+        }
+    }
+
     private void OnTriggerEnter2D(Collider2D collision)
     {
         if (collision.CompareTag("Player") && collision.GetComponent<PhotonView>().IsMine)
@@ -15,11 +36,16 @@ public class FinalPuzzleCollider : MonoBehaviourPunCallbacks
             // Only activate for Player 1
             if (PhotonNetwork.LocalPlayer.ActorNumber == 1)
             {
-                if (!handler.puzzleComplete)
+                if (handler != null && !handler.puzzleComplete)
+                {
                     ui.SetActive(true);
-
-                playerInside = true;
-                handler.photonView.RequestOwnership();
+                    playerInside = true;
+                    handler.photonView.RequestOwnership();
+                }
+                else if (handler == null)
+                {
+                    Debug.LogError("FinalPuzzleHandler reference is null!");
+                }
             }
         }
     }
@@ -30,8 +56,11 @@ public class FinalPuzzleCollider : MonoBehaviourPunCallbacks
         {
             if (PhotonNetwork.LocalPlayer.ActorNumber == 1)
             {
-                ui.SetActive(false);
-                playerInside = false;
+                if (handler != null)
+                {
+                    ui.SetActive(false);
+                    playerInside = false;
+                }
             }
         }
     }
