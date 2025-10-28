@@ -1,4 +1,4 @@
-// CharacterSelectionController.cs
+// CharacterSelectionController.cs (Updated)
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -111,7 +111,6 @@ public class CharacterSelectionController : MonoBehaviourPunCallbacks
         NetworkManager.Instance.SelectCharacter(characterName);
 
         // Show waiting panel
-        selectionPanel.SetActive(false);
         waitingPanel.SetActive(true);
 
         UpdateWaitingText();
@@ -153,32 +152,72 @@ public class CharacterSelectionController : MonoBehaviourPunCallbacks
     {
         if (!PhotonNetwork.InRoom) return;
 
+        Debug.Log("Updating character availability...");
+        Debug.Log($"Character 1 available: {NetworkManager.Instance.IsCharacterAvailable(character1Name)}");
+        Debug.Log($"Character 2 available: {NetworkManager.Instance.IsCharacterAvailable(character2Name)}");
+
+        // Reset both buttons first
+        character1Image.color = availableColor;
+        character2Image.color = availableColor;
+        character1Button.interactable = true;
+        character2Button.interactable = true;
+
         // Update UI based on what characters are already taken
         if (!NetworkManager.Instance.IsCharacterAvailable(character1Name))
         {
             character1Image.color = takenColor;
             character1Button.interactable = false;
+            Debug.Log($"Character 1 ({character1Name}) is taken");
         }
 
         if (!NetworkManager.Instance.IsCharacterAvailable(character2Name))
         {
             character2Image.color = takenColor;
             character2Button.interactable = false;
+            Debug.Log($"Character 2 ({character2Name}) is taken");
+        }
+
+        // If we've already selected a character, update that too
+        if (hasSelected)
+        {
+            if (selectedCharacter == character1Name)
+            {
+                character1Image.color = selectedColor;
+                character1Button.interactable = false;
+            }
+            else if (selectedCharacter == character2Name)
+            {
+                character2Image.color = selectedColor;
+                character2Button.interactable = false;
+            }
         }
     }
 
     public override void OnPlayerEnteredRoom(Player newPlayer)
     {
-        Debug.Log("Player entered room: " + newPlayer.ActorNumber);
+        Debug.Log("Jogado entrou na sala: " + newPlayer.ActorNumber);
         UpdateCharacterAvailability();
         UpdateWaitingText();
     }
 
     public override void OnPlayerLeftRoom(Player otherPlayer)
     {
-        Debug.Log("Player left room: " + otherPlayer.ActorNumber);
+        Debug.Log("Jogador saiu da sala: " + otherPlayer.ActorNumber);
         UpdateCharacterAvailability();
         UpdateWaitingText();
+    }
+
+    // Add this method to handle when player properties change (character selections)
+    public override void OnPlayerPropertiesUpdate(Player targetPlayer, ExitGames.Client.Photon.Hashtable changedProps)
+    {
+        Debug.Log($"Player {targetPlayer.ActorNumber} properties updated");
+        if (changedProps.ContainsKey("Character"))
+        {
+            string character = (string)changedProps["Character"];
+            Debug.Log($"Player {targetPlayer.ActorNumber} selected character: {character}");
+            UpdateCharacterAvailability();
+            UpdateWaitingText();
+        }
     }
 
     void UpdateWaitingText()
@@ -189,15 +228,21 @@ public class CharacterSelectionController : MonoBehaviourPunCallbacks
             int maxPlayers = PhotonNetwork.CurrentRoom.MaxPlayers;
             int selectedCount = NetworkManager.Instance.GetSelectedCharacterCount();
 
-            waitingText.text = $"Selected: {selectedCharacter}\n" +
-                              $"Players: {playersInRoom}/{maxPlayers}\n" +
-                              $"Ready: {selectedCount}/{maxPlayers}";
+            waitingText.text = $"Selecionou: {selectedCharacter}\n" +
+                              $"Jogadores(as): {playersInRoom}/{maxPlayers}\n" +
+                              $"Prontos(as): {selectedCount}/{maxPlayers}";
         }
     }
 
     void Update()
     {
         UpdateWaitingText();
+
+        // Optional: Update availability periodically to catch any sync issues
+        if (Time.frameCount % 60 == 0) // Update every 60 frames
+        {
+            UpdateCharacterAvailability();
+        }
     }
 
     public void LeaveRoom()

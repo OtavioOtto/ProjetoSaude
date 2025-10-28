@@ -1,8 +1,8 @@
-// PlayerBehaviours.cs (Updated)
+// PlayerBehaviours.cs (Updated with proper flip sync)
 using UnityEngine;
 using Photon.Pun;
 
-public class PlayerBehaviours : MonoBehaviourPunCallbacks
+public class PlayerBehaviours : MonoBehaviourPunCallbacks, IPunObservable
 {
     [Header("Player Movement")]
     public float speed = 5f;
@@ -12,22 +12,28 @@ public class PlayerBehaviours : MonoBehaviourPunCallbacks
     [Header("Player Animations")]
     private Animator anim;
     private Vector2 lastMoveDirection;
-    private bool facingLeft = true;
+    private bool facingRight = true;
 
     [Header("Puzzle References")]
     [SerializeField] private FinalPuzzleHandler finalPuzzle;
     [SerializeField] private SecondPlayerFinalPuzzleHandler secondPlayerFinalPuzzle;
 
+    // Network synced variables
+    private Vector2 networkInput;
+    private Vector2 networkLastMoveDirection;
+    private bool networkFacingRight = true;
+    private Vector3 networkScale;
+
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
+        networkScale = transform.localScale;
 
-        // Only enable for local player
+        // Only enable physics and input for local player
         if (!photonView.IsMine)
         {
-            enabled = false;
-            return;
+            rb.isKinematic = true; // Disable physics for remote players
         }
 
         // Find puzzle handlers based on player number
@@ -43,15 +49,37 @@ public class PlayerBehaviours : MonoBehaviourPunCallbacks
 
     void Update()
     {
-        PlayerMovement();
+        if (photonView.IsMine)
+        {
+            // Local player: handle input and movement
+            PlayerMovement();
+            if ((input.x < 0 && facingRight) || (input.x > 0 && !facingRight))
+                Flip();
+        }
+        else
+        {
+            // Remote player: use network synced values
+            input = networkInput;
+            lastMoveDirection = networkLastMoveDirection;
+
+            // Apply the synced scale for flipping
+            if (transform.localScale != networkScale)
+            {
+                transform.localScale = networkScale;
+                facingRight = networkFacingRight;
+            }
+        }
+
+        // Always update animations for all players
         Animate();
-        if ((input.x < 0 && !facingLeft) || (input.x > 0 && facingLeft))
-            Flip();
     }
 
     void FixedUpdate()
     {
-        rb.linearVelocity = input * speed;
+        if (photonView.IsMine)
+        {
+            rb.linearVelocity = input * speed;
+        }
     }
 
     void PlayerMovement()
@@ -103,6 +131,30 @@ public class PlayerBehaviours : MonoBehaviourPunCallbacks
         Vector3 scale = transform.localScale;
         scale.x *= -1;
         transform.localScale = scale;
-        facingLeft = !facingLeft;
+        facingRight = !facingRight;
+
+        // Update network scale so other players see the flip
+        networkScale = scale;
+        networkFacingRight = facingRight;
+    }
+
+    public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
+    {
+        if (stream.IsWriting)
+        {
+            // We own this player: send the others our data
+            stream.SendNext(input);
+            stream.SendNext(lastMoveDirection);
+            stream.SendNext(facingRight);
+            stream.SendNext(transform.localScale);
+        }
+        else
+        {
+            // Network player, receive data
+            networkInput = (Vector2)stream.ReceiveNext();
+            networkLastMoveDirection = (Vector2)stream.ReceiveNext();
+            networkFacingRight = (bool)stream.ReceiveNext();
+            networkScale = (Vector3)stream.ReceiveNext();
+        }
     }
 }

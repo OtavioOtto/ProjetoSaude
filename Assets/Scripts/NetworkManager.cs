@@ -35,11 +35,17 @@ public class NetworkManager : MonoBehaviourPunCallbacks
         {
             Instance = this;
             DontDestroyOnLoad(gameObject);
+
+            // Ensure we have a PhotonView component
+            if (GetComponent<PhotonView>() == null)
+            {
+                gameObject.AddComponent<PhotonView>();
+            }
         }
         else
         {
             Destroy(gameObject);
-            return;
+            return; // Add this return statement
         }
 
         PhotonNetwork.AutomaticallySyncScene = true;
@@ -85,6 +91,58 @@ public class NetworkManager : MonoBehaviourPunCallbacks
             CreateOrJoinRoomInternal();
         }
     }
+    [PunRPC]
+    private void RPC_SelectCharacter(int actorNumber, string characterName)
+    {
+        Debug.Log($"RPC_SelectCharacter called: Player {actorNumber} selected {characterName}");
+
+        // Update the selected characters dictionary
+        if (selectedCharacters.ContainsKey(actorNumber))
+        {
+            selectedCharacters[actorNumber] = characterName;
+        }
+        else
+        {
+            selectedCharacters.Add(actorNumber, characterName);
+        }
+
+        Debug.Log($"Player {actorNumber} selected character: {characterName}");
+
+        // Also update the player's custom properties
+        Player player = PhotonNetwork.CurrentRoom.GetPlayer(actorNumber);
+        if (player != null)
+        {
+            var properties = new ExitGames.Client.Photon.Hashtable();
+            properties["Character"] = characterName;
+            player.SetCustomProperties(properties);
+        }
+
+        // Check if all players have selected characters and we're ready to start the game
+        CheckAllPlayersReady();
+    }
+
+    private void CheckAllPlayersReady()
+    {
+        if (!PhotonNetwork.InRoom) return;
+
+        int playerCount = PhotonNetwork.CurrentRoom.PlayerCount;
+        int selectedCount = GetSelectedCharacterCount();
+
+        Debug.Log($"Players: {playerCount}, Selected: {selectedCount}");
+
+        // If all players have selected characters, start the game
+        if (playerCount >= 2 && selectedCount >= 2 && PhotonNetwork.IsMasterClient)
+        {
+            Debug.Log("All players ready! Starting game...");
+            StartCoroutine(StartGameAfterDelay());
+        }
+    }
+
+    private IEnumerator StartGameAfterDelay()
+    {
+        yield return new WaitForSeconds(1f); // Small delay to ensure everything is synced
+        PhotonNetwork.LoadLevel(gameSceneName);
+    }
 
     public void CreateOrJoinRoom()
     {
@@ -112,16 +170,49 @@ public class NetworkManager : MonoBehaviourPunCallbacks
 
     private void CreateOrJoinRoomInternal()
     {
-        if (currentState != ConnectionState.InLobby)
+        if (!PhotonNetwork.IsConnectedAndReady)
         {
-            Debug.LogError($"Cannot create/join room in state: {currentState}");
+            Debug.LogError($"Cannot create/join room - not connected and ready. State: {PhotonNetwork.NetworkClientState}");
+
+            // Try again when we're ready
+            StartCoroutine(WaitAndRetryRoomJoin());
             return;
         }
 
-        RoomOptions roomOptions = new RoomOptions();
-        roomOptions.MaxPlayers = 2;
-        roomOptions.EmptyRoomTtl = 1000; // Give time for players to connect
-        PhotonNetwork.JoinOrCreateRoom("CoopRoom", roomOptions, TypedLobby.Default);
+        if (PhotonNetwork.InLobby)
+        {
+            RoomOptions roomOptions = new RoomOptions();
+            roomOptions.MaxPlayers = 2;
+            roomOptions.EmptyRoomTtl = 1000;
+            PhotonNetwork.JoinOrCreateRoom("CoopRoom", roomOptions, TypedLobby.Default);
+        }
+        else
+        {
+            Debug.LogError($"Cannot create/join room - not in lobby. Current state: {PhotonNetwork.NetworkClientState}");
+
+            // Try to join lobby first, then retry room join
+            wantsToJoinRoom = true;
+            PhotonNetwork.JoinLobby();
+        }
+    }
+
+    private IEnumerator WaitAndRetryRoomJoin()
+    {
+        // Wait until we're connected and ready
+        yield return new WaitUntil(() => PhotonNetwork.IsConnectedAndReady);
+
+        // Small additional delay to ensure stability
+        yield return new WaitForSeconds(0.5f);
+
+        if (PhotonNetwork.InLobby)
+        {
+            CreateOrJoinRoomInternal();
+        }
+        else
+        {
+            wantsToJoinRoom = true;
+            PhotonNetwork.JoinLobby();
+        }
     }
 
     public override void OnJoinedRoom()
@@ -130,11 +221,11 @@ public class NetworkManager : MonoBehaviourPunCallbacks
         currentState = ConnectionState.InRoom;
         wantsToJoinRoom = false;
 
-        // Set player properties
+        // Initialize player properties if not set
         if (PhotonNetwork.LocalPlayer.CustomProperties["Character"] == null)
         {
             var properties = new ExitGames.Client.Photon.Hashtable();
-            properties["Character"] = GetLocalPlayerCharacter();
+            properties["Character"] = ""; // Empty initially
             PhotonNetwork.LocalPlayer.SetCustomProperties(properties);
         }
 
@@ -201,6 +292,8 @@ public class NetworkManager : MonoBehaviourPunCallbacks
         {
             selectedCharacters.Remove(otherPlayer.ActorNumber);
         }
+
+        CheckAllPlayersReady(); // Update ready status
     }
 
     public override void OnLeftRoom()
@@ -257,7 +350,7 @@ public class NetworkManager : MonoBehaviourPunCallbacks
 
     public bool IsReadyForRoomOperations()
     {
-        return currentState == ConnectionState.InLobby;
+        return PhotonNetwork.IsConnectedAndReady && PhotonNetwork.InLobby;
     }
 
     // Helper method to get connection status for UI
@@ -270,4 +363,10 @@ public class NetworkManager : MonoBehaviourPunCallbacks
     {
         return currentState;
     }
+
+    public void SetWantsToJoinRoom(bool wantToJoin)
+    {
+        wantsToJoinRoom = wantToJoin;
+    }
+
 }

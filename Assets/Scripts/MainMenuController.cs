@@ -77,13 +77,17 @@ public class MainMenuController : MonoBehaviour
         }
         else
         {
-            Debug.LogError("Not ready for room operations yet! Status: " + NetworkManager.Instance.GetConnectionStatus());
+            Debug.LogError("Not ready for room operations yet! Status: " + NetworkManager.Instance.GetConnectionStatus() +
+                          ", Photon State: " + PhotonNetwork.NetworkClientState);
 
             // Show error to user
             ShowError("Not connected yet. Please wait...");
 
             // Try to continue connection process
             NetworkManager.Instance.ConnectToPhoton();
+
+            // Set flag to join room when ready
+            NetworkManager.Instance.SetWantsToJoinRoom(true);
         }
     }
 
