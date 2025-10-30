@@ -243,7 +243,7 @@ public class NetworkManager : MonoBehaviourPunCallbacks
         if (SceneManager.GetActiveScene().name == "MainMenu")
         {
             // Notify MainMenu about the failure
-            MainMenuController menuController = FindObjectOfType<MainMenuController>();
+            MainMenuController menuController = FindFirstObjectByType<MainMenuController>();
             if (menuController != null)
             {
                 menuController.OnJoinRoomFailed(message);
@@ -260,7 +260,7 @@ public class NetworkManager : MonoBehaviourPunCallbacks
         // Show error to user or try again
         if (SceneManager.GetActiveScene().name == "MainMenu")
         {
-            MainMenuController menuController = FindObjectOfType<MainMenuController>();
+            MainMenuController menuController = FindFirstObjectByType<MainMenuController>();
             if (menuController != null)
             {
                 menuController.OnJoinRoomFailed(message);

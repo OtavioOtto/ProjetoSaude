@@ -1,4 +1,3 @@
-// PlayerBehaviours.cs (Updated with proper flip sync)
 using UnityEngine;
 using Photon.Pun;
 
@@ -24,17 +23,21 @@ public class PlayerBehaviours : MonoBehaviourPunCallbacks, IPunObservable
     private bool networkFacingRight = true;
     private Vector3 networkScale;
 
-    void Start()
+    public bool myPuzzleActive;
+    private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
-        anim = GetComponent<Animator>();
-        networkScale = transform.localScale;
-
         // Only enable physics and input for local player
         if (!photonView.IsMine)
         {
-            rb.isKinematic = true; // Disable physics for remote players
+            rb.bodyType = RigidbodyType2D.Kinematic;// Disable physics for remote players
         }
+    }
+    void Start()
+    {
+        myPuzzleActive = false;   
+        anim = GetComponent<Animator>();
+        networkScale = transform.localScale;
 
         // Find puzzle handlers based on player number
         if (PhotonNetwork.LocalPlayer.ActorNumber == 1)
@@ -74,26 +77,35 @@ public class PlayerBehaviours : MonoBehaviourPunCallbacks, IPunObservable
         Animate();
     }
 
-    void FixedUpdate()
-    {
-        if (photonView.IsMine)
-        {
-            rb.linearVelocity = input * speed;
-        }
-    }
-
     void PlayerMovement()
     {
-        // Check if current player's puzzle is active
-        bool myPuzzleActive = false;
+        // Update puzzle references if null
+        if (PhotonNetwork.LocalPlayer.ActorNumber == 1 && finalPuzzle == null)
+            finalPuzzle = FindFirstObjectByType<FinalPuzzleHandler>();
+
+        if (PhotonNetwork.LocalPlayer.ActorNumber == 2 && secondPlayerFinalPuzzle == null)
+            secondPlayerFinalPuzzle = FindFirstObjectByType<SecondPlayerFinalPuzzleHandler>();
+
+        // Check puzzle state with null checks
+        bool wasPuzzleActive = myPuzzleActive;
 
         if (PhotonNetwork.LocalPlayer.ActorNumber == 1 && finalPuzzle != null)
         {
             myPuzzleActive = finalPuzzle.isPuzzleActive;
         }
-        else if (secondPlayerFinalPuzzle != null)
+        else if (PhotonNetwork.LocalPlayer.ActorNumber == 2 && secondPlayerFinalPuzzle != null)
         {
             myPuzzleActive = secondPlayerFinalPuzzle.isPuzzleActive;
+        }
+        else
+        {
+            myPuzzleActive = false; // Default to false if no puzzle found
+        }
+
+        // Debug state changes
+        if (wasPuzzleActive != myPuzzleActive)
+        {
+            Debug.Log($"Puzzle active state changed: {myPuzzleActive}");
         }
 
         if (!myPuzzleActive)
@@ -114,6 +126,15 @@ public class PlayerBehaviours : MonoBehaviourPunCallbacks, IPunObservable
         {
             // Puzzle is active - stop movement
             input = Vector2.zero;
+            rb.linearVelocity = Vector2.zero; // Ensure physics stops too
+        }
+    }
+
+    void FixedUpdate()
+    {
+        if (photonView.IsMine)
+        {
+            rb.linearVelocity = input * speed;
         }
     }
 

@@ -1,4 +1,3 @@
-// FinalPuzzleHandler.cs (Updated - focus on the Update method)
 using System.Collections;
 using TMPro;
 using UnityEngine;
@@ -223,6 +222,7 @@ public class FinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObservable
     [PunRPC]
     void CompletePuzzle()
     {
+        isPuzzleActive = false;
         puzzleComplete = true;
         syncedComplete = true;
         if (feedbackTxt != null)

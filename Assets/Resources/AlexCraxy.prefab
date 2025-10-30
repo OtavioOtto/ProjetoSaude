@@ -140,6 +140,7 @@ MonoBehaviour:
   speed: 5
   finalPuzzle: {fileID: 0}
   secondPlayerFinalPuzzle: {fileID: 0}
+  myPuzzleActive: 0
 --- !u!95 &7696766848757680541
 Animator:
   serializedVersion: 7

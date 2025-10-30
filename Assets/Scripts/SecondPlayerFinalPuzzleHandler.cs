@@ -1,4 +1,4 @@
-// SecondPlayerFinalPuzzleHandler.cs (Updated with comprehensive debugging)
+// SecondPlayerFinalPuzzleHandler.cs (Fixed with IPunObservable implementation)
 using UnityEngine;
 using UnityEngine.UI;
 using Photon.Pun;
@@ -18,12 +18,6 @@ public class SecondPlayerFinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObs
     [SerializeField] private float successZoneSize = 30f;
     [SerializeField] private float skillCheckFrequency = 3f;
 
-    [Header("Progress")]
-    [SerializeField] private Slider progressSlider;
-
-    [Header("UI Feedback")]
-    [SerializeField] private TMP_Text feedbackText;
-
     [Header("Verifiers")]
     public bool isPuzzleActive;
     public bool puzzleComplete;
@@ -35,46 +29,56 @@ public class SecondPlayerFinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObs
     private float puzzleProgress = 0f;
     private bool firstTime;
 
+    private PhotonView photonViews;
+
+    void Awake()
+    {
+        photonViews = GetComponent<PhotonView>();
+
+        // If PhotonView is null, try to find it
+        if (photonViews == null)
+        {
+            photonViews = FindObjectOfType<PhotonView>();
+            Debug.Log(photonView != null ? "Found PhotonView" : "PhotonView still null!");
+        }
+    }
+
     void Start()
     {
         firstTime = true;
         isPuzzleActive = false;
         puzzleComplete = false;
 
+        // Debug all references
+        Debug.Log($"SkillCheckBG: {skillCheckBG != null}");
+        Debug.Log($"SkillCheck: {skillCheck != null}");
+        Debug.Log($"Pointer: {pointer != null}");
+        Debug.Log($"HitArea: {hitArea != null}");
+        Debug.Log($"SuccessZone: {successZone != null}");
+
         if (successZone != null)
+        {
             successZone.fillAmount = successZoneSize / 360f;
+            Debug.Log($"Success zone fill amount set to: {successZone.fillAmount}");
+        }
+        else
+        {
+            Debug.LogError("SuccessZone Image is null!");
+        }
 
-        if (progressSlider != null)
-            progressSlider.value = 0f;
+        // Initially hide the skill check UI
+        if (skillCheck != null)
+            skillCheck.SetActive(false);
 
-        if (feedbackText != null)
-            feedbackText.gameObject.SetActive(false);
-
-        Debug.Log("SecondPlayerFinalPuzzleHandler initialized for Player 2");
+        Debug.Log("SecondPlayerFinalPuzzleHandler initialized");
     }
 
     void Update()
     {
-        // Basic checks
-        if (photonView == null)
-        {
-            Debug.LogError("PhotonView is null!");
-            return;
-        }
+        if (!photonView.IsMine) return;
+        if (PhotonNetwork.LocalPlayer == null || PhotonNetwork.LocalPlayer.ActorNumber != 2) return;
 
-        if (!photonView.IsMine)
-        {
-            // Debug.Log("PhotonView is not mine");
-            return;
-        }
-
-        if (PhotonNetwork.LocalPlayer == null || PhotonNetwork.LocalPlayer.ActorNumber != 2)
-        {
-            // Debug.Log("Not Player 2 or local player is null");
-            return;
-        }
-
-        // SIMPLIFIED: Force activate for testing if we press a key
+        // Force activate for testing
         if (Input.GetKeyDown(KeyCode.P) && !isPuzzleActive && !puzzleComplete)
         {
             Debug.Log("Force activating puzzle with P key");
@@ -83,21 +87,15 @@ public class SecondPlayerFinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObs
             lastSkillCheckTime = Time.time - skillCheckFrequency;
         }
 
-        // Debug puzzle state occasionally
-        if (Time.frameCount % 60 == 0) // Every 60 frames
-        {
-            Debug.Log($"Puzzle - Active: {isPuzzleActive}, Complete: {puzzleComplete}, SkillCheck: {isSkillCheckActive}, Progress: {puzzleProgress}");
-        }
-
-        // Skill check activation - SIMPLIFIED CONDITION
-        if (isPuzzleActive && !puzzleComplete && (!isSkillCheckActive || firstTime))
+        // Skill check activation
+        if (isPuzzleActive && !puzzleComplete && !isSkillCheckActive)
         {
             float timeSinceLastCheck = Time.time - lastSkillCheckTime;
-            firstTime = false;
 
-            if (timeSinceLastCheck > skillCheckFrequency)
+            if (timeSinceLastCheck > skillCheckFrequency || firstTime)
             {
-                Debug.Log($"STARTING SKILL CHECK! Time since last: {timeSinceLastCheck}");
+                firstTime = false;
+                Debug.Log($"Starting skill check! Time since last: {timeSinceLastCheck}");
                 StartSkillCheck();
             }
         }
@@ -106,14 +104,13 @@ public class SecondPlayerFinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObs
         {
             UpdateSkillCheck();
         }
-
-        UpdatePuzzleProgress();
     }
 
     void StartSkillCheck()
     {
         isSkillCheckActive = true;
 
+        // Show the skill check UI
         if (skillCheck != null)
         {
             skillCheck.SetActive(true);
@@ -129,14 +126,14 @@ public class SecondPlayerFinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObs
         if (successZone != null)
         {
             successZone.transform.rotation = Quaternion.Euler(0, 0, successZoneAngle);
-            Debug.Log($"Success zone angle: {successZoneAngle}");
+            Debug.Log($"Success zone rotated to: {successZoneAngle} degrees");
         }
         else
         {
-            Debug.LogError("SuccessZone is null!");
+            Debug.LogError("SuccessZone is null - cannot rotate!");
         }
 
-        // Reset pointer
+        // Reset pointer position
         currentAngle = 0f;
         if (pointer != null)
         {
@@ -145,11 +142,10 @@ public class SecondPlayerFinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObs
         }
         else
         {
-            Debug.LogError("Pointer is null!");
+            Debug.LogError("Pointer is null - cannot rotate!");
         }
 
         lastSkillCheckTime = Time.time;
-        Debug.Log("Skill check fully started");
     }
 
     void UpdateSkillCheck()
@@ -159,7 +155,9 @@ public class SecondPlayerFinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObs
         if (currentAngle >= 360f) currentAngle -= 360f;
 
         if (pointer != null)
+        {
             pointer.rotation = Quaternion.Euler(0, 0, currentAngle);
+        }
 
         // Check for space input
         if (Input.GetKeyDown(KeyCode.Space))
@@ -169,7 +167,7 @@ public class SecondPlayerFinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObs
         }
 
         // Auto-fail if too slow
-        if (Time.time - lastSkillCheckTime > 3f)
+        if (Time.time - lastSkillCheckTime > 5f) // Increased timeout
         {
             Debug.Log("Skill check auto-failed (timeout)");
             FailSkillCheck();
@@ -195,7 +193,7 @@ public class SecondPlayerFinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObs
         }
 
         bool isSuccess = pointerAngle >= successStart && pointerAngle <= successEnd;
-        Debug.Log($"Skill check result - Pointer: {pointerAngle}, Zone: {successStart}-{successEnd}, Success: {isSuccess}");
+        Debug.Log($"Skill check - Pointer: {pointerAngle}, Zone: {successStart}-{successEnd}, Success: {isSuccess}");
 
         if (isSuccess)
         {
@@ -237,17 +235,10 @@ public class SecondPlayerFinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObs
     void AddProgress(float amount)
     {
         puzzleProgress = Mathf.Clamp01(puzzleProgress + amount);
-
-        // Update progress slider
-        if (progressSlider != null)
-            progressSlider.value = puzzleProgress;
-
         Debug.Log($"Progress updated: {puzzleProgress} (+{amount})");
 
         if (puzzleProgress >= 1f)
         {
-            puzzleComplete = true;
-            isPuzzleActive = false;
             Debug.Log("PUZZLE COMPLETED!");
             photonView.RPC("CompletePuzzle", RpcTarget.All);
         }
@@ -256,19 +247,8 @@ public class SecondPlayerFinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObs
     [PunRPC]
     void ShowSkillCheckResult(string message, string color)
     {
-        if (feedbackText != null)
-        {
-            feedbackText.text = message;
-
-            if (color == "green")
-                feedbackText.color = Color.green;
-            else if (color == "red")
-                feedbackText.color = Color.red;
-
-            feedbackText.gameObject.SetActive(true);
-            StartCoroutine(HideFeedbackText());
-        }
-        Debug.Log($"Skill Check Result: {message}");
+        // Implement your result display here
+        Debug.Log($"{message} - Color: {color}");
     }
 
     [PunRPC]
@@ -288,42 +268,36 @@ public class SecondPlayerFinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObs
         }
     }
 
-    void UpdatePuzzleProgress()
-    {
-        // Update progress slider color based on progress
-        if (progressSlider != null)
-        {
-            Image fillImage = progressSlider.fillRect.GetComponent<Image>();
-            if (fillImage != null)
-            {
-                if (puzzleProgress <= 0.2f)
-                    fillImage.color = Color.red;
-                else if (puzzleProgress <= 0.4f)
-                    fillImage.color = new Color(1f, 0.5f, 0f);
-                else if (puzzleProgress <= 0.6f)
-                    fillImage.color = Color.yellow;
-                else if (puzzleProgress <= 0.8f)
-                    fillImage.color = new Color(0.5f, 1f, 0f);
-                else
-                    fillImage.color = Color.green;
-            }
-        }
-    }
-
     // Called by the collider when player enters
+    // In SecondPlayerFinalPuzzleHandler.cs - Update the ActivatePuzzle method:
     public void ActivatePuzzle()
     {
         Debug.Log($"ActivatePuzzle called - IsMine: {photonView.IsMine}, PlayerNumber: {PhotonNetwork.LocalPlayer.ActorNumber}");
 
-        if (photonView.IsMine && PhotonNetwork.LocalPlayer.ActorNumber == 2)
+        if (PhotonNetwork.LocalPlayer.ActorNumber == 2)
         {
+            // Use RPC to ensure all clients get the activation
+            photonView.RPC("SyncPuzzleActivation", RpcTarget.All, true);
+
+            // Also set locally for immediate response
             isPuzzleActive = true;
             puzzleProgress = 0f;
-            if (progressSlider != null)
-                progressSlider.value = 0f;
 
             Debug.Log("Second player puzzle ACTIVATED");
-            photonView.RPC("SyncPuzzleActivation", RpcTarget.All, true);
+        }
+    }
+
+    [PunRPC]
+    void SyncPuzzleActivation(bool active)
+    {
+        isPuzzleActive = active;
+        Debug.Log($"SyncPuzzleActivation RPC - Active: {active}, Called by Player: {PhotonNetwork.LocalPlayer.ActorNumber}");
+
+        if (!active)
+        {
+            if (skillCheck != null)
+                skillCheck.SetActive(false);
+            isSkillCheckActive = false;
         }
     }
 
@@ -345,44 +319,40 @@ public class SecondPlayerFinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObs
         }
     }
 
-    [PunRPC]
-    void SyncPuzzleActivation(bool active)
-    {
-        isPuzzleActive = active;
-        Debug.Log($"SyncPuzzleActivation RPC - Active: {active}");
 
-        if (!active)
-        {
-            if (skillCheck != null)
-                skillCheck.SetActive(false);
-            isSkillCheckActive = false;
-        }
-    }
-
-    private System.Collections.IEnumerator HideFeedbackText()
-    {
-        yield return new WaitForSeconds(1.5f);
-        if (feedbackText != null)
-            feedbackText.gameObject.SetActive(false);
-    }
-
+    // FIX: Added the missing OnPhotonSerializeView method
     public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
     {
         if (stream.IsWriting)
         {
-            stream.SendNext(puzzleProgress);
-            stream.SendNext(puzzleComplete);
+            // We own this player: send the others our data
             stream.SendNext(isPuzzleActive);
+            stream.SendNext(puzzleComplete);
+            stream.SendNext(puzzleProgress);
+            stream.SendNext(isSkillCheckActive);
         }
         else
         {
-            puzzleProgress = (float)stream.ReceiveNext();
-            puzzleComplete = (bool)stream.ReceiveNext();
-            isPuzzleActive = (bool)stream.ReceiveNext();
+            // Network player, receive data
+            this.isPuzzleActive = (bool)stream.ReceiveNext();
+            this.puzzleComplete = (bool)stream.ReceiveNext();
+            this.puzzleProgress = (float)stream.ReceiveNext();
+            this.isSkillCheckActive = (bool)stream.ReceiveNext();
+        }
+    }
 
-            // Update UI for remote clients
-            if (progressSlider != null)
-                progressSlider.value = puzzleProgress;
+    // Add these methods to SecondPlayerFinalPuzzleHandler.cs
+
+    [PunRPC]
+    void RequestActivationFromOwner()
+    {
+        Debug.Log($"Activation requested from owner. Current owner: {photonView.Owner?.ActorNumber}, IsMine: {photonView.IsMine}");
+
+        // If this client is the owner, activate the puzzle
+        if (photonView.IsMine && PhotonNetwork.LocalPlayer.ActorNumber == 2)
+        {
+            Debug.Log("Owner is activating puzzle via RPC request");
+            ActivatePuzzle();
         }
     }
 }
