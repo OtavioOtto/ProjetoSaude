@@ -50,6 +50,12 @@ MonoBehaviour:
   - SyncPuzzleActivation
   - ReportPuzzleComplete
   - RequestActivationFromOwner
+  - ForceActivatePuzzle
+  - ReportPlayerInPosition
+  - ReportSkillCheckFailure
+  - ResetPuzzle
+  - ResetPuzzleProgress
+  - StopPuzzle
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 0

@@ -184,7 +184,7 @@ public class FinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObservable
             photonView.RPC("CompletePuzzle", RpcTarget.All);
 
             // Notify coordinator
-            PuzzleCoordinator.Instance.photonView.RPC("ReportPuzzleComplete", RpcTarget.All, 1);
+            FinalPuzzleCoordinator.Instance.photonView.RPC("ReportPuzzleComplete", RpcTarget.All, 1);
         }
 
         if (puzzleCoroutine != null)
@@ -225,8 +225,18 @@ public class FinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObservable
         isPuzzleActive = false;
         puzzleComplete = true;
         syncedComplete = true;
+        waitingForInput = false;
+
+        if (puzzleCoroutine != null)
+        {
+            StopCoroutine(puzzleCoroutine);
+            puzzleCoroutine = null;
+        }
+
         if (feedbackTxt != null)
             feedbackTxt.SetText("Completou!");
+
+        Debug.Log("Player 1 puzzle completed and stopped");
     }
 
     void SubtractOne()
@@ -303,5 +313,59 @@ public class FinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObservable
             puzzleComplete = syncedComplete;
             isPuzzleActive = syncedActive;
         }
+    }
+
+    [PunRPC]
+    public void ResetPuzzleProgress()
+    {
+        if (photonView.IsMine)
+        {
+            syncedProgress = 0f;
+            progress.value = 0f;
+            photonView.RPC("UpdateProgress", RpcTarget.All, 0f);
+
+            if (puzzleCoroutine != null)
+            {
+                StopCoroutine(puzzleCoroutine);
+                puzzleCoroutine = null;
+            }
+
+            isPuzzleActive = false;
+            Debug.Log("Player 1 puzzle progress reset");
+        }
+    }
+
+    [PunRPC]
+    public void ForceActivatePuzzle()
+    {
+        if (PhotonNetwork.LocalPlayer.ActorNumber == 1 && !puzzleComplete)
+        {
+            isPuzzleActive = true;
+            if (puzzleCoroutine == null)
+            {
+                puzzleCoroutine = StartCoroutine(FinalPuzzle());
+            }
+        }
+    }
+
+    [PunRPC]
+    public void StopPuzzle()
+    {
+        if (puzzleCoroutine != null)
+        {
+            StopCoroutine(puzzleCoroutine);
+            puzzleCoroutine = null;
+        }
+
+        isPuzzleActive = false;
+        waitingForInput = false;
+
+        // Clear UI
+        if (buttonTxt != null)
+            buttonTxt.SetText("");
+        if (feedbackTxt != null)
+            feedbackTxt.gameObject.SetActive(false);
+
+        Debug.Log("Player 1 puzzle stopped");
     }
 }

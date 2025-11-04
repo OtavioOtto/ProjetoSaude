@@ -1,4 +1,4 @@
-// SecondPlayerFinalPuzzleHandler.cs (Fixed with IPunObservable implementation)
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 using Photon.Pun;
@@ -12,6 +12,8 @@ public class SecondPlayerFinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObs
     [SerializeField] private RectTransform pointer;
     [SerializeField] private RectTransform hitArea;
     [SerializeField] private Image successZone;
+    [SerializeField] private TMP_Text playerFeedback;
+    [SerializeField] private GameObject playerFeedbackGO;
 
     [Header("Settings")]
     [SerializeField] private float pointerSpeed = 180f;
@@ -26,19 +28,18 @@ public class SecondPlayerFinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObs
     private float currentAngle = 0f;
     private float successZoneAngle;
     private float lastSkillCheckTime = 0f;
-    private float puzzleProgress = 0f;
     private bool firstTime;
 
-    private PhotonView photonViews;
+    private PhotonView _photonView;
 
     void Awake()
     {
-        photonViews = GetComponent<PhotonView>();
+        _photonView = GetComponent<PhotonView>();
 
         // If PhotonView is null, try to find it
-        if (photonViews == null)
+        if (_photonView == null)
         {
-            photonViews = FindObjectOfType<PhotonView>();
+            _photonView = FindFirstObjectByType<PhotonView>();
             Debug.Log(photonView != null ? "Found PhotonView" : "PhotonView still null!");
         }
     }
@@ -78,12 +79,17 @@ public class SecondPlayerFinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObs
         if (!photonView.IsMine) return;
         if (PhotonNetwork.LocalPlayer == null || PhotonNetwork.LocalPlayer.ActorNumber != 2) return;
 
+        if (puzzleComplete && isPuzzleActive)
+        {
+            StopPuzzle();
+            return;
+        }
+
         // Force activate for testing
         if (Input.GetKeyDown(KeyCode.P) && !isPuzzleActive && !puzzleComplete)
         {
             Debug.Log("Force activating puzzle with P key");
             isPuzzleActive = true;
-            puzzleProgress = 0f;
             lastSkillCheckTime = Time.time - skillCheckFrequency;
         }
 
@@ -122,7 +128,7 @@ public class SecondPlayerFinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObs
         }
 
         // Randomize success zone position
-        successZoneAngle = Random.Range(0f, 360f);
+        successZoneAngle = Random.Range(65f, 290f);
         if (successZone != null)
         {
             successZone.transform.rotation = Quaternion.Euler(0, 0, successZoneAngle);
@@ -177,8 +183,8 @@ public class SecondPlayerFinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObs
     void CheckSkillCheckResult()
     {
         float pointerAngle = currentAngle;
-        float successStart = successZoneAngle - successZoneSize / 2f;
-        float successEnd = successZoneAngle + successZoneSize / 2f;
+        float successStart = successZoneAngle - 35f;
+        float successEnd = successZoneAngle + 40f;
 
         // Handle circular overlap
         if (successStart < 0)
@@ -208,17 +214,21 @@ public class SecondPlayerFinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObs
     void SuccessSkillCheck()
     {
         Debug.Log("Skill check SUCCESS!");
-        photonView.RPC("AddProgress", RpcTarget.All, 0.15f);
-        photonView.RPC("ShowSkillCheckResult", RpcTarget.All, "Good!", "green");
+        photonView.RPC("ShowSkillCheckResult", RpcTarget.All, "Boa!");
         EndSkillCheck();
     }
 
     void FailSkillCheck()
     {
         Debug.Log("Skill check FAILED!");
-        photonView.RPC("AddProgress", RpcTarget.All, -0.1f);
-        photonView.RPC("ShowSkillCheckResult", RpcTarget.All, "Failed!", "red");
+        photonView.RPC("ShowSkillCheckResult", RpcTarget.All, "Falhou!");
         EndSkillCheck();
+
+        // Notify coordinator about failure
+        if (FinalPuzzleCoordinator.Instance != null)
+        {
+            FinalPuzzleCoordinator.Instance.photonView.RPC("ReportSkillCheckFailure", RpcTarget.All);
+        }
     }
 
     void EndSkillCheck()
@@ -232,23 +242,11 @@ public class SecondPlayerFinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObs
     }
 
     [PunRPC]
-    void AddProgress(float amount)
+    void ShowSkillCheckResult(string message)
     {
-        puzzleProgress = Mathf.Clamp01(puzzleProgress + amount);
-        Debug.Log($"Progress updated: {puzzleProgress} (+{amount})");
-
-        if (puzzleProgress >= 1f)
-        {
-            Debug.Log("PUZZLE COMPLETED!");
-            photonView.RPC("CompletePuzzle", RpcTarget.All);
-        }
-    }
-
-    [PunRPC]
-    void ShowSkillCheckResult(string message, string color)
-    {
-        // Implement your result display here
-        Debug.Log($"{message} - Color: {color}");
+        playerFeedback.text = message;
+        playerFeedbackGO.SetActive(true);
+        StartCoroutine(FeedbackReset());
     }
 
     [PunRPC]
@@ -256,6 +254,8 @@ public class SecondPlayerFinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObs
     {
         puzzleComplete = true;
         isPuzzleActive = false;
+        isSkillCheckActive = false;
+
         if (skillCheck != null)
             skillCheck.SetActive(false);
 
@@ -281,7 +281,6 @@ public class SecondPlayerFinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObs
 
             // Also set locally for immediate response
             isPuzzleActive = true;
-            puzzleProgress = 0f;
 
             Debug.Log("Second player puzzle ACTIVATED");
         }
@@ -328,7 +327,6 @@ public class SecondPlayerFinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObs
             // We own this player: send the others our data
             stream.SendNext(isPuzzleActive);
             stream.SendNext(puzzleComplete);
-            stream.SendNext(puzzleProgress);
             stream.SendNext(isSkillCheckActive);
         }
         else
@@ -336,12 +334,9 @@ public class SecondPlayerFinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObs
             // Network player, receive data
             this.isPuzzleActive = (bool)stream.ReceiveNext();
             this.puzzleComplete = (bool)stream.ReceiveNext();
-            this.puzzleProgress = (float)stream.ReceiveNext();
             this.isSkillCheckActive = (bool)stream.ReceiveNext();
         }
     }
-
-    // Add these methods to SecondPlayerFinalPuzzleHandler.cs
 
     [PunRPC]
     void RequestActivationFromOwner()
@@ -354,5 +349,55 @@ public class SecondPlayerFinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObs
             Debug.Log("Owner is activating puzzle via RPC request");
             ActivatePuzzle();
         }
+    }
+
+    IEnumerator FeedbackReset() 
+    {
+        yield return new WaitForSeconds(1.5f);
+        playerFeedback.gameObject.SetActive(false);
+    }
+
+    [PunRPC]
+    public void ResetPuzzle()
+    {
+        if (photonView.IsMine)
+        {
+            isSkillCheckActive = false;
+            firstTime = true;
+            lastSkillCheckTime = Time.time;
+
+            if (skillCheck != null)
+                skillCheck.SetActive(false);
+
+            Debug.Log("Player 2 puzzle reset");
+        }
+    }
+
+    [PunRPC]
+    public void ForceActivatePuzzle()
+    {
+        if (PhotonNetwork.LocalPlayer.ActorNumber == 2 && !puzzleComplete)
+        {
+            isPuzzleActive = true;
+            firstTime = true;
+            Debug.Log("Player 2 puzzle force activated");
+        }
+    }
+
+    [PunRPC]
+    public void StopPuzzle()
+    {
+        isPuzzleActive = false;
+        isSkillCheckActive = false;
+
+        // Hide skill check UI
+        if (skillCheck != null)
+            skillCheck.SetActive(false);
+
+        // Clear feedback
+        if (playerFeedbackGO != null)
+            playerFeedbackGO.SetActive(false);
+
+        Debug.Log("Player 2 puzzle stopped");
     }
 }

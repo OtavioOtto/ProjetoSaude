@@ -1,4 +1,4 @@
-// SecondPlayerFinalPuzzleCollider.cs
+// SecondPlayerFinalPuzzleCollider.cs (Updated)
 using UnityEngine;
 using Photon.Pun;
 using System.Collections;
@@ -27,6 +27,7 @@ public class SecondPlayerFinalPuzzleCollider : MonoBehaviourPunCallbacks
             Debug.LogError("Handler is missing PhotonView component!");
         }
 
+        // Only enable for Player 2
         if (PhotonNetwork.LocalPlayer.ActorNumber != 2)
         {
             enabled = false;
@@ -51,6 +52,17 @@ public class SecondPlayerFinalPuzzleCollider : MonoBehaviourPunCallbacks
                     ui.SetActive(true);
                     playerInside = true;
 
+                    // Report to coordinator that Player 2 is in position
+                    if (FinalPuzzleCoordinator.Instance != null)
+                    {
+                        FinalPuzzleCoordinator.Instance.photonView.RPC("ReportPlayerInPosition", RpcTarget.All, 2, true);
+                        Debug.Log("Reported Player 2 in position to coordinator");
+                    }
+                    else
+                    {
+                        Debug.LogError("FinalPuzzleCoordinator instance not found!");
+                    }
+
                     // Start ownership and activation process
                     StartCoroutine(OwnershipAndActivationProcess());
                     Debug.Log("Puzzle activation process started");
@@ -69,15 +81,15 @@ public class SecondPlayerFinalPuzzleCollider : MonoBehaviourPunCallbacks
 
         ownershipRequestInProgress = true;
 
-        // If we already own it, just activate
+        // If we already own it, just wait for coordinator to activate
         if (handler.photonView.IsMine)
         {
-            handler.ActivatePuzzle();
+            Debug.Log("Already own the handler, waiting for coordinator activation");
             ownershipRequestInProgress = false;
             yield break;
         }
 
-        // Request ownership
+        // Request ownership so we can handle activation when coordinator triggers it
         handler.photonView.RequestOwnership();
         Debug.Log("Ownership requested");
 
@@ -94,13 +106,13 @@ public class SecondPlayerFinalPuzzleCollider : MonoBehaviourPunCallbacks
         if (handler.photonView.IsMine)
         {
             Debug.Log("Ownership acquired successfully!");
-            handler.ActivatePuzzle();
+            // Don't activate directly - wait for coordinator
         }
         else
         {
             Debug.LogError($"Could not acquire ownership after {timeout} seconds. Current owner: {handler.photonView.Owner?.ActorNumber}");
 
-            // Fallback: Try to activate anyway using RPC
+            // Fallback: Try to request activation via RPC (but coordinator should handle this)
             Debug.Log("Trying fallback activation via RPC");
             handler.photonView.RPC("RequestActivationFromOwner", RpcTarget.All);
         }
@@ -119,6 +131,13 @@ public class SecondPlayerFinalPuzzleCollider : MonoBehaviourPunCallbacks
                     ui.SetActive(false);
                     playerInside = false;
 
+                    // Report to coordinator that Player 2 left position
+                    if (FinalPuzzleCoordinator.Instance != null)
+                    {
+                        FinalPuzzleCoordinator.Instance.photonView.RPC("ReportPlayerInPosition", RpcTarget.All, 2, false);
+                        Debug.Log("Reported Player 2 left position to coordinator");
+                    }
+
                     // Only deactivate if we own it
                     if (handler.photonView.IsMine)
                     {
@@ -127,6 +146,16 @@ public class SecondPlayerFinalPuzzleCollider : MonoBehaviourPunCallbacks
                     Debug.Log("Puzzle deactivated");
                 }
             }
+        }
+    }
+
+    // Optional: Add a method to check if both players are ready and activate manually
+    // This can be useful for testing without the coordinator
+    private void TryManualActivation()
+    {
+        if (handler != null && handler.photonView.IsMine && !handler.puzzleComplete)
+        {
+            handler.ActivatePuzzle();
         }
     }
 }

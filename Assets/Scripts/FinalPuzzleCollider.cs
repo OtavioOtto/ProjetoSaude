@@ -33,18 +33,18 @@ public class FinalPuzzleCollider : MonoBehaviourPunCallbacks
     {
         if (collision.CompareTag("Player") && collision.GetComponent<PhotonView>().IsMine)
         {
-            // Only activate for Player 1
             if (PhotonNetwork.LocalPlayer.ActorNumber == 1)
             {
                 if (handler != null && !handler.puzzleComplete)
                 {
                     ui.SetActive(true);
                     playerInside = true;
-                    handler.photonView.RequestOwnership();
-                }
-                else if (handler == null)
-                {
-                    Debug.LogError("FinalPuzzleHandler reference is null!");
+
+                    // Report to coordinator
+                    if (FinalPuzzleCoordinator.Instance != null)
+                    {
+                        FinalPuzzleCoordinator.Instance.photonView.RPC("ReportPlayerInPosition", RpcTarget.All, 1, true);
+                    }
                 }
             }
         }
@@ -60,6 +60,12 @@ public class FinalPuzzleCollider : MonoBehaviourPunCallbacks
                 {
                     ui.SetActive(false);
                     playerInside = false;
+
+                    // Report to coordinator
+                    if (FinalPuzzleCoordinator.Instance != null)
+                    {
+                        FinalPuzzleCoordinator.Instance.photonView.RPC("ReportPlayerInPosition", RpcTarget.All, 1, false);
+                    }
                 }
             }
         }
