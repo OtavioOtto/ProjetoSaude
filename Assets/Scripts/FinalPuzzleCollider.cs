@@ -13,7 +13,7 @@ public class FinalPuzzleCollider : MonoBehaviourPunCallbacks
         // Ensure we have a reference to the handler
         if (handler == null)
         {
-            handler = FindObjectOfType<FinalPuzzleHandler>();
+            handler = FindFirstObjectByType<FinalPuzzleHandler>();
         }
 
         if (handler == null)
