@@ -46,7 +46,7 @@ public class FinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObservable
         puzzleComplete = false;
 
         // Find the activation collider
-        activationCollider = FindObjectOfType<FinalPuzzleCollider>();
+        activationCollider = FindFirstObjectByType<FinalPuzzleCollider>();
 
         // Only enable for Player 1
         if (PhotonNetwork.LocalPlayer.ActorNumber != 1)
@@ -55,7 +55,6 @@ public class FinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObservable
             return;
         }
 
-        Debug.Log("FinalPuzzleHandler initialized for Player 1");
     }
 
     void Update()
@@ -67,19 +66,25 @@ public class FinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObservable
         if (activationCollider == null)
         {
             // Try to find it again if it's null
-            activationCollider = FindObjectOfType<FinalPuzzleCollider>();
+            activationCollider = FindFirstObjectByType<FinalPuzzleCollider>();
             if (activationCollider == null)
             {
-                Debug.LogError("FinalPuzzleCollider not found!");
                 return;
             }
         }
 
+        // Check if we should start the puzzle
         if (!isPuzzleActive && !puzzleComplete && ShouldActivatePuzzle())
         {
             isPuzzleActive = true;
             syncedActive = true;
             puzzleCoroutine = StartCoroutine(FinalPuzzle());
+        }
+
+        // Check if we should stop the puzzle (if other player left)
+        if (isPuzzleActive && !ShouldActivatePuzzle())
+        {
+            StopPuzzle();
         }
 
         if (puzzleComplete)
@@ -90,8 +95,11 @@ public class FinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObservable
 
     bool ShouldActivatePuzzle()
     {
-        // Use the collider to determine if we should activate
-        return activationCollider != null && activationCollider.playerInside;
+        // Use the coordinator to determine if both players are ready
+        return activationCollider != null &&
+               activationCollider.playerInside &&
+               FinalPuzzleCoordinator.Instance != null &&
+               FinalPuzzleCoordinator.Instance.bothPuzzlesActive;
     }
 
     // Rest of your FinalPuzzleHandler methods remain the same...
@@ -107,45 +115,63 @@ public class FinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObservable
             else
                 firstTime = false;
 
-            int buttonIndex = Random.Range(0, 7);
-            if (lastNumber != -1)
-                while (buttonIndex == lastNumber)
-                    buttonIndex = Random.Range(0, 7);
+            // Generate new button (ensure it's different from last)
+            int buttonIndex;
+            do
+            {
+                buttonIndex = Random.Range(0, _buttons.Length);
+            } while (buttonIndex == lastNumber && _buttons.Length > 1);
 
             currentButton = _buttons[buttonIndex];
-            photonView.RPC("UpdateButtonText", RpcTarget.All, "[" + currentButton + "]");
             lastNumber = buttonIndex;
 
+            // Update UI and reset state
+            photonView.RPC("UpdateButtonText", RpcTarget.All, "[" + currentButton + "]");
             timeLeft = 3f;
             waitingForInput = true;
-
-            CancelInvoke("SubtractOne");
-            InvokeRepeating("SubtractOne", .5f, .5f);
             missed = false;
-            bool success = false;
-            KeyCode targetKeyCode = GetKeyCodeFromString(currentButton);
 
+            // Clear any previous invoke
+            CancelInvoke("SubtractOne");
+            InvokeRepeating("SubtractOne", 1f, 1f); // Changed to 1 second intervals
+
+            KeyCode targetKeyCode = GetKeyCodeFromString(currentButton);
+            bool success = false;
+            float inputStartTime = Time.time;
+
+            // Input loop - simplified
             while (waitingForInput && timeLeft > 0)
             {
+                // Check for the correct key
                 if (Input.GetKeyDown(targetKeyCode))
                 {
                     success = true;
                     waitingForInput = false;
+                    break;
                 }
+                // Check for any wrong key press
                 else if (Input.anyKeyDown)
                 {
-                    if (!Input.GetKeyDown(targetKeyCode))
+                    // Check if any of the valid buttons were pressed (wrong one)
+                    foreach (string button in _buttons)
                     {
-                        success = false;
-                        missed = true;
-                        waitingForInput = false;
+                        KeyCode keyCode = GetKeyCodeFromString(button);
+                        if (Input.GetKeyDown(keyCode) && keyCode != targetKeyCode)
+                        {
+                            success = false;
+                            missed = true;
+                            waitingForInput = false;
+                            break;
+                        }
                     }
                 }
+
                 yield return null;
             }
 
             CancelInvoke("SubtractOne");
 
+            // Handle result
             if (success)
             {
                 syncedProgress += 0.1f;
@@ -172,6 +198,7 @@ public class FinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObservable
                 photonView.RPC("ShowFeedback", RpcTarget.All, feedback);
             }
 
+            // Clear the button display and wait before next round
             yield return new WaitForSeconds(.5f);
         }
 
@@ -184,7 +211,10 @@ public class FinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObservable
             photonView.RPC("CompletePuzzle", RpcTarget.All);
 
             // Notify coordinator
-            FinalPuzzleCoordinator.Instance.photonView.RPC("ReportPuzzleComplete", RpcTarget.All, 1);
+            if (FinalPuzzleCoordinator.Instance != null)
+            {
+                FinalPuzzleCoordinator.Instance.photonView.RPC("ReportPuzzleComplete", RpcTarget.All, 1);
+            }
         }
 
         if (puzzleCoroutine != null)
@@ -235,8 +265,6 @@ public class FinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObservable
 
         if (feedbackTxt != null)
             feedbackTxt.SetText("Completou!");
-
-        Debug.Log("Player 1 puzzle completed and stopped");
     }
 
     void SubtractOne()
@@ -331,7 +359,6 @@ public class FinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObservable
             }
 
             isPuzzleActive = false;
-            Debug.Log("Player 1 puzzle progress reset");
         }
     }
 
@@ -366,6 +393,6 @@ public class FinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObservable
         if (feedbackTxt != null)
             feedbackTxt.gameObject.SetActive(false);
 
-        Debug.Log("Player 1 puzzle stopped");
     }
+
 }

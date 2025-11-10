@@ -16,11 +16,6 @@ public class FinalPuzzleCollider : MonoBehaviourPunCallbacks
             handler = FindFirstObjectByType<FinalPuzzleHandler>();
         }
 
-        if (handler == null)
-        {
-            Debug.LogError("FinalPuzzleHandler not found! Make sure it's in the scene.");
-        }
-
         // Only enable for Player 1
         if (PhotonNetwork.LocalPlayer.ActorNumber != 1)
         {

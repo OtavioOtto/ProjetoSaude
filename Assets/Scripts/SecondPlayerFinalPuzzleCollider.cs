@@ -15,23 +15,12 @@ public class SecondPlayerFinalPuzzleCollider : MonoBehaviourPunCallbacks
         if (handler == null)
         {
             handler = FindFirstObjectByType<SecondPlayerFinalPuzzleHandler>();
-            Debug.Log("Handler found via FindObjectOfType: " + (handler != null));
-        }
-
-        if (handler == null)
-        {
-            Debug.LogError("SecondPlayerFinalPuzzleHandler not found!");
-        }
-        else if (handler.photonView == null)
-        {
-            Debug.LogError("Handler is missing PhotonView component!");
         }
 
         // Only enable for Player 2
         if (PhotonNetwork.LocalPlayer.ActorNumber != 2)
         {
             enabled = false;
-            Debug.Log("Collider disabled - not Player 2");
         }
     }
 
@@ -63,9 +52,12 @@ public class SecondPlayerFinalPuzzleCollider : MonoBehaviourPunCallbacks
                         Debug.LogError("FinalPuzzleCoordinator instance not found!");
                     }
 
-                    // Start ownership and activation process
-                    StartCoroutine(OwnershipAndActivationProcess());
-                    Debug.Log("Puzzle activation process started");
+                    // Request ownership immediately when entering
+                    if (!handler.photonView.IsMine)
+                    {
+                        Debug.Log("Player 2 requesting puzzle ownership on trigger enter");
+                        handler.photonView.RequestOwnership();
+                    }
                 }
                 else
                 {
@@ -84,14 +76,12 @@ public class SecondPlayerFinalPuzzleCollider : MonoBehaviourPunCallbacks
         // If we already own it, just wait for coordinator to activate
         if (handler.photonView.IsMine)
         {
-            Debug.Log("Already own the handler, waiting for coordinator activation");
             ownershipRequestInProgress = false;
             yield break;
         }
 
         // Request ownership so we can handle activation when coordinator triggers it
         handler.photonView.RequestOwnership();
-        Debug.Log("Ownership requested");
 
         // Wait for ownership with timeout
         float timeout = 2f;
@@ -105,15 +95,11 @@ public class SecondPlayerFinalPuzzleCollider : MonoBehaviourPunCallbacks
 
         if (handler.photonView.IsMine)
         {
-            Debug.Log("Ownership acquired successfully!");
-            // Don't activate directly - wait for coordinator
         }
         else
         {
-            Debug.LogError($"Could not acquire ownership after {timeout} seconds. Current owner: {handler.photonView.Owner?.ActorNumber}");
 
             // Fallback: Try to request activation via RPC (but coordinator should handle this)
-            Debug.Log("Trying fallback activation via RPC");
             handler.photonView.RPC("RequestActivationFromOwner", RpcTarget.All);
         }
 
@@ -135,7 +121,6 @@ public class SecondPlayerFinalPuzzleCollider : MonoBehaviourPunCallbacks
                     if (FinalPuzzleCoordinator.Instance != null)
                     {
                         FinalPuzzleCoordinator.Instance.photonView.RPC("ReportPlayerInPosition", RpcTarget.All, 2, false);
-                        Debug.Log("Reported Player 2 left position to coordinator");
                     }
 
                     // Only deactivate if we own it
@@ -143,7 +128,6 @@ public class SecondPlayerFinalPuzzleCollider : MonoBehaviourPunCallbacks
                     {
                         handler.DeactivatePuzzle();
                     }
-                    Debug.Log("Puzzle deactivated");
                 }
             }
         }
