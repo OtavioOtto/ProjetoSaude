@@ -65,8 +65,8 @@ public class SecondPlayerFinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObs
 
     void Update()
     {
-        if (!photonView.IsMine) return;
-        if (PhotonNetwork.LocalPlayer == null || PhotonNetwork.LocalPlayer.ActorNumber != 2) return;
+        int puzzleType = NetworkManager.Instance.GetLocalPlayerPuzzleType();
+        if (!photonView.IsMine || puzzleType != 2) return;
 
         if (puzzleComplete && isPuzzleActive)
         {
@@ -330,7 +330,8 @@ public class SecondPlayerFinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObs
     {
         Debug.Log($"ForceActivatePuzzle RPC received - Player: {PhotonNetwork.LocalPlayer?.ActorNumber}, IsMine: {photonView.IsMine}");
 
-        if (PhotonNetwork.LocalPlayer != null && PhotonNetwork.LocalPlayer.ActorNumber == 2 && !puzzleComplete)
+        int puzzleType = NetworkManager.Instance.GetLocalPlayerPuzzleType();
+        if (PhotonNetwork.LocalPlayer != null && puzzleType == 2 && !puzzleComplete)
         {
             // Request ownership if we don't have it
             if (!photonView.IsMine)

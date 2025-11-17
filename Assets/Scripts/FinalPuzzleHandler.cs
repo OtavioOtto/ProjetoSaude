@@ -48,19 +48,19 @@ public class FinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObservable
         // Find the activation collider
         activationCollider = FindFirstObjectByType<FinalPuzzleCollider>();
 
-        // Only enable for Player 1
-        if (PhotonNetwork.LocalPlayer.ActorNumber != 1)
+        // Only enable for players who selected Alex (character1)
+        int puzzleType = NetworkManager.Instance.GetLocalPlayerPuzzleType();
+        if (puzzleType != 1)
         {
             enabled = false;
             return;
         }
-
     }
 
     void Update()
     {
-        // Only Player 1 can activate and control this puzzle
-        if (!photonView.IsMine || PhotonNetwork.LocalPlayer.ActorNumber != 1) return;
+        int puzzleType = NetworkManager.Instance.GetLocalPlayerPuzzleType();
+        if (!photonView.IsMine || puzzleType != 1) return;
 
         // Add null check for activationCollider
         if (activationCollider == null)

@@ -33,6 +33,11 @@ public class UnpoweredWireBehaviour : MonoBehaviour
         if (collision.GetComponent<PoweredWireStats>()) 
         {
             PoweredWireStats statsPower = collision.GetComponent<PoweredWireStats>();
+            if (statsPower.color == stats.color)
+            {
+                statsPower.connected = false;
+                stats.connected = false;
+            }
         }
     }
 

@@ -13,6 +13,9 @@ public class NetworkManager : MonoBehaviourPunCallbacks
 
     private Dictionary<int, string> selectedCharacters = new Dictionary<int, string>();
 
+    private const string CHARACTER_MORFEUS = "Morfeus";
+    private const string CHARACTER_ALEXCRAXY = "AlexCraxy";
+
     // Connection states
     public enum ConnectionState
     {
@@ -30,22 +33,35 @@ public class NetworkManager : MonoBehaviourPunCallbacks
 
     void Awake()
     {
-        // Handle singleton pattern
+        // Destroy any duplicate NetworkManagers immediately
+        NetworkManager[] managers = FindObjectsByType<NetworkManager>(FindObjectsSortMode.None);
+        if (managers.Length > 1)
+        {
+            foreach (var manager in managers)
+            {
+                if (manager != this)
+                {
+                    Destroy(manager.gameObject);
+                }
+            }
+        }
+
         if (Instance == null)
         {
             Instance = this;
             DontDestroyOnLoad(gameObject);
 
-            // Ensure we have a PhotonView component
-            if (GetComponent<PhotonView>() == null)
+            // Ensure PhotonView has unique ID
+            PhotonView pv = GetComponent<PhotonView>();
+            if (pv != null && pv.ViewID == 0)
             {
-                gameObject.AddComponent<PhotonView>();
+                pv.ViewID = 1000;
             }
         }
-        else
+        else if (Instance != this)
         {
             Destroy(gameObject);
-            return; // Add this return statement
+            return;
         }
 
         PhotonNetwork.AutomaticallySyncScene = true;
@@ -114,11 +130,35 @@ public class NetworkManager : MonoBehaviourPunCallbacks
         {
             var properties = new ExitGames.Client.Photon.Hashtable();
             properties["Character"] = characterName;
+
+            // Determine puzzle type based on character name using constants
+            int puzzleType = (characterName == CHARACTER_MORFEUS) ? 1 : 2;
+            properties["PuzzleType"] = puzzleType;
+
             player.SetCustomProperties(properties);
         }
 
         // Check if all players have selected characters and we're ready to start the game
         CheckAllPlayersReady();
+    }
+
+    public int GetPuzzleTypeForPlayer(int actorNumber)
+    {
+        string character = GetSelectedCharacter(actorNumber);
+
+        if (character == CHARACTER_MORFEUS)
+        {
+            return 1; // FinalPuzzleHandler - Morfeus
+        }
+        else
+        {
+            return 2; // SecondPlayerFinalPuzzleHandler - AlexCraxy
+        }
+    }
+
+    public int GetLocalPlayerPuzzleType()
+    {
+        return GetPuzzleTypeForPlayer(PhotonNetwork.LocalPlayer.ActorNumber);
     }
 
     private void CheckAllPlayersReady()
@@ -140,7 +180,18 @@ public class NetworkManager : MonoBehaviourPunCallbacks
 
     private IEnumerator StartGameAfterDelay()
     {
-        yield return new WaitForSeconds(1f); // Small delay to ensure everything is synced
+        yield return new WaitForSeconds(1f);
+
+        // Clean up any duplicate CharacterSelectionController instances
+        CharacterSelectionController[] controllers = FindObjectsByType<CharacterSelectionController>(FindObjectsSortMode.None);
+        foreach (var controller in controllers)
+        {
+            if (controller != controllers[0]) // Keep the first one, destroy duplicates
+            {
+                Destroy(controller.gameObject);
+            }
+        }
+
         PhotonNetwork.LoadLevel(gameSceneName);
     }
 
@@ -230,6 +281,7 @@ public class NetworkManager : MonoBehaviourPunCallbacks
         }
 
         // Load character selection scene for all players
+        // This will create a new CharacterSelectionController instance
         PhotonNetwork.LoadLevel("CharacterSelection");
     }
 
@@ -286,6 +338,13 @@ public class NetworkManager : MonoBehaviourPunCallbacks
     public override void OnPlayerLeftRoom(Player otherPlayer)
     {
         Debug.Log($"Player {otherPlayer.ActorNumber} left the room");
+
+        // If a player leaves during character selection, reset transitioning flag
+        CharacterSelectionController charSelection = FindFirstObjectByType<CharacterSelectionController>();
+        if (charSelection != null && SceneManager.GetActiveScene().name == "CharacterSelection")
+        {
+            charSelection.SetTransitioning(false);
+        }
 
         // Remove the player who left from selected characters
         if (selectedCharacters.ContainsKey(otherPlayer.ActorNumber))

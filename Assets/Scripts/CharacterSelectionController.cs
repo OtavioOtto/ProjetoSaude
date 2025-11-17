@@ -1,9 +1,11 @@
 // CharacterSelectionController.cs (Updated)
-using UnityEngine;
-using UnityEngine.UI;
-using TMPro;
+using System.Collections;
 using Photon.Pun;
 using Photon.Realtime;
+using TMPro;
+using UnityEngine;
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class CharacterSelectionController : MonoBehaviourPunCallbacks
 {
@@ -24,11 +26,12 @@ public class CharacterSelectionController : MonoBehaviourPunCallbacks
     [SerializeField] private Color takenColor = Color.red;
 
     [Header("Character Info")]
-    [SerializeField] private string character1Name = "Alex";
-    [SerializeField] private string character2Name = "Sam";
+    [SerializeField] private string character1Name = "Morfeus";
+    [SerializeField] private string character2Name = "AlexCraxy";
 
     private string selectedCharacter;
     private bool hasSelected = false;
+    private bool isTransitioning = false;
 
     void Start()
     {
@@ -42,7 +45,13 @@ public class CharacterSelectionController : MonoBehaviourPunCallbacks
         character1Button.onClick.AddListener(() => SelectCharacter(character1Name));
         character2Button.onClick.AddListener(() => SelectCharacter(character2Name));
 
-        // Check connection status
+        // Don't check connection immediately - wait a frame for Photon to settle
+        StartCoroutine(DelayedConnectionCheck());
+    }
+
+    private IEnumerator DelayedConnectionCheck()
+    {
+        yield return new WaitForSeconds(0.5f); // Wait for Photon to stabilize
         CheckConnectionStatus();
     }
 
@@ -50,6 +59,7 @@ public class CharacterSelectionController : MonoBehaviourPunCallbacks
     {
         if (!PhotonNetwork.IsConnected)
         {
+            Debug.LogError("Not connected to Photon!");
             ShowConnectionError("Disconnected from server. Returning to main menu.");
             Invoke("ReturnToMainMenu", 2f);
             return;
@@ -57,6 +67,7 @@ public class CharacterSelectionController : MonoBehaviourPunCallbacks
 
         if (!PhotonNetwork.InRoom)
         {
+            Debug.LogError("Not in a room! Current state: " + PhotonNetwork.NetworkClientState);
             ShowConnectionError("Not in a room. Returning to main menu.");
             Invoke("ReturnToMainMenu", 2f);
             return;
@@ -68,7 +79,11 @@ public class CharacterSelectionController : MonoBehaviourPunCallbacks
         connectionErrorPanel.SetActive(false);
 
         UpdateCharacterAvailability();
+
+        Debug.Log("Successfully connected to room - showing character selection");
     }
+    public string GetCharacter1Name() { return character1Name; }
+    public string GetCharacter2Name() { return character2Name; }
 
     void ShowConnectionError(string message)
     {
@@ -250,14 +265,57 @@ public class CharacterSelectionController : MonoBehaviourPunCallbacks
         PhotonNetwork.LeaveRoom();
     }
 
-    public override void OnLeftRoom()
-    {
-        PhotonNetwork.LoadLevel("MainMenu");
-    }
 
     public override void OnDisconnected(DisconnectCause cause)
     {
         ShowConnectionError("Disconnected: " + cause);
         Invoke("ReturnToMainMenu", 2f);
+    }
+
+    public void OnGameStarting()
+    {
+        isTransitioning = true;
+
+        // Hide all UI panels
+        selectionPanel.SetActive(false);
+        waitingPanel.SetActive(false);
+        connectionErrorPanel.SetActive(false);
+
+        Debug.Log("Game is starting - hiding character selection UI");
+    }
+
+    public void SetTransitioning(bool transitioning)
+    {
+        isTransitioning = transitioning;
+    }
+    private void OnEnable()
+    {
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
+    private void OnDisable()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        Debug.Log($"Scene loaded: {scene.name}");
+
+        if (scene.name == "GameScene")
+        {
+            // Game started successfully - destroy this controller
+            Debug.Log("Game scene loaded - destroying character selection controller");
+            Destroy(gameObject);
+        }
+        else if (scene.name == "MainMenu")
+        {
+            // If we're in main menu but this controller exists, destroy it
+            if (PhotonNetwork.InRoom)
+            {
+                PhotonNetwork.LeaveRoom();
+            }
+            Destroy(gameObject);
+        }
     }
 }

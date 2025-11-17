@@ -35,16 +35,18 @@ public class PlayerBehaviours : MonoBehaviourPunCallbacks, IPunObservable
     }
     void Start()
     {
-        myPuzzleActive = false;   
+        myPuzzleActive = false;
         anim = GetComponent<Animator>();
         networkScale = transform.localScale;
 
-        // Find puzzle handlers based on player number
-        if (PhotonNetwork.LocalPlayer.ActorNumber == 1)
+        // Find puzzle handlers based on character selection
+        int puzzleType = NetworkManager.Instance.GetLocalPlayerPuzzleType();
+
+        if (puzzleType == 1) // Alex - FinalPuzzleHandler
         {
             finalPuzzle = FindFirstObjectByType<FinalPuzzleHandler>();
         }
-        else
+        else // Morfeus - SecondPlayerFinalPuzzleHandler
         {
             secondPlayerFinalPuzzle = FindFirstObjectByType<SecondPlayerFinalPuzzleHandler>();
         }

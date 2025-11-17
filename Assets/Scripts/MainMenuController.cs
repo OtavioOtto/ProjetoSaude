@@ -28,7 +28,7 @@ public class MainMenuController : MonoBehaviour
     void Update()
     {
         // Update connection status regularly
-        if (Time.time - lastConnectionCheckTime > 1f)
+        if (Time.time - lastConnectionCheckTime > 1f && !NetworkManager.Instance.GetConnectionStatus().Equals(NetworkManager.ConnectionState.InLobby))
         {
             UpdateConnectionStatus();
             lastConnectionCheckTime = Time.time;

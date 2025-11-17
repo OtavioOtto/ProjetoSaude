@@ -17,8 +17,9 @@ public class SecondPlayerFinalPuzzleCollider : MonoBehaviourPunCallbacks
             handler = FindFirstObjectByType<SecondPlayerFinalPuzzleHandler>();
         }
 
-        // Only enable for Player 2
-        if (PhotonNetwork.LocalPlayer.ActorNumber != 2)
+        // Only enable for players who selected Morfeus (character2)
+        int puzzleType = NetworkManager.Instance.GetLocalPlayerPuzzleType();
+        if (puzzleType != 2) // Not Morfeus
         {
             enabled = false;
         }
@@ -26,13 +27,14 @@ public class SecondPlayerFinalPuzzleCollider : MonoBehaviourPunCallbacks
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        Debug.Log($"Trigger entered by: {collision.gameObject.name}, Tag: {collision.tag}");
-
+        
+        int puzzleType = NetworkManager.Instance.GetLocalPlayerPuzzleType();
+        Debug.Log($"Trigger entered by: {collision.gameObject.name}, Tag: {collision.tag}, Puzzle type: {puzzleType}");
         if (collision.CompareTag("Player") && collision.GetComponent<PhotonView>().IsMine)
         {
             Debug.Log("Local player entered trigger");
 
-            if (PhotonNetwork.LocalPlayer.ActorNumber == 2)
+            if (puzzleType == 2)
             {
                 Debug.Log("Player 2 entered puzzle area");
 
@@ -108,9 +110,10 @@ public class SecondPlayerFinalPuzzleCollider : MonoBehaviourPunCallbacks
 
     private void OnTriggerExit2D(Collider2D collision)
     {
+        int puzzleType = NetworkManager.Instance.GetLocalPlayerPuzzleType();
         if (collision.CompareTag("Player") && collision.GetComponent<PhotonView>().IsMine)
         {
-            if (PhotonNetwork.LocalPlayer.ActorNumber == 2)
+            if (puzzleType == 2)
             {
                 if (handler != null)
                 {

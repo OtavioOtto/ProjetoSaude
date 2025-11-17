@@ -16,8 +16,9 @@ public class FinalPuzzleCollider : MonoBehaviourPunCallbacks
             handler = FindFirstObjectByType<FinalPuzzleHandler>();
         }
 
-        // Only enable for Player 1
-        if (PhotonNetwork.LocalPlayer.ActorNumber != 1)
+        // Only enable for players who selected Alex (character1)
+        int puzzleType = NetworkManager.Instance.GetLocalPlayerPuzzleType();
+        if (puzzleType != 1) // Not Alex
         {
             enabled = false;
             return;
@@ -26,9 +27,11 @@ public class FinalPuzzleCollider : MonoBehaviourPunCallbacks
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
+        int puzzleType = NetworkManager.Instance.GetLocalPlayerPuzzleType();
+        Debug.Log($"Trigger entered by: {collision.gameObject.name}, Tag: {collision.tag}, Puzzle type: {puzzleType}");
         if (collision.CompareTag("Player") && collision.GetComponent<PhotonView>().IsMine)
         {
-            if (PhotonNetwork.LocalPlayer.ActorNumber == 1)
+            if (puzzleType == 1)
             {
                 if (handler != null && !handler.puzzleComplete)
                 {
@@ -47,9 +50,10 @@ public class FinalPuzzleCollider : MonoBehaviourPunCallbacks
 
     private void OnTriggerExit2D(Collider2D collision)
     {
+        int puzzleType = NetworkManager.Instance.GetLocalPlayerPuzzleType();
         if (collision.CompareTag("Player") && collision.GetComponent<PhotonView>().IsMine)
         {
-            if (PhotonNetwork.LocalPlayer.ActorNumber == 1)
+            if (puzzleType == 1)
             {
                 if (handler != null)
                 {
