@@ -6,6 +6,7 @@ using System.Collections;
 public class SecondPlayerFinalPuzzleCollider : MonoBehaviourPunCallbacks
 {
     [SerializeField] private SecondPlayerFinalPuzzleHandler handler;
+    [SerializeField] private GameObject warningTxt;
     public GameObject ui;
     public bool playerInside;
     private bool ownershipRequestInProgress = false;
@@ -66,6 +67,8 @@ public class SecondPlayerFinalPuzzleCollider : MonoBehaviourPunCallbacks
                     Debug.LogError("Cannot activate puzzle - handler issues");
                 }
             }
+            else if (puzzleType == 1)
+                warningTxt.SetActive(true);
         }
     }
 
@@ -133,6 +136,9 @@ public class SecondPlayerFinalPuzzleCollider : MonoBehaviourPunCallbacks
                     }
                 }
             }
+
+            else if (puzzleType == 1)
+                warningTxt.SetActive(false);
         }
     }
 

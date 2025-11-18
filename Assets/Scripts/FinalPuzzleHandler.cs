@@ -62,35 +62,51 @@ public class FinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObservable
         int puzzleType = NetworkManager.Instance.GetLocalPlayerPuzzleType();
         if (!photonView.IsMine || puzzleType != 1) return;
 
-        // Add null check for activationCollider
-        if (activationCollider == null)
-        {
-            // Try to find it again if it's null
-            activationCollider = FindFirstObjectByType<FinalPuzzleCollider>();
-            if (activationCollider == null)
-            {
-                return;
-            }
-        }
-
-        // Check if we should start the puzzle
-        if (!isPuzzleActive && !puzzleComplete && ShouldActivatePuzzle())
-        {
-            isPuzzleActive = true;
-            syncedActive = true;
-            puzzleCoroutine = StartCoroutine(FinalPuzzle());
-        }
-
-        // Check if we should stop the puzzle (if other player left)
-        if (isPuzzleActive && !ShouldActivatePuzzle())
-        {
-            StopPuzzle();
-        }
-
+        // Handle puzzle completion
         if (puzzleComplete)
             StartCoroutine(HideUI());
 
         UpdateProgressColor();
+
+        // Input handling during active puzzle
+        if (isPuzzleActive && waitingForInput)
+        {
+            // Input is already handled in the coroutine, but we need to ensure
+            // the puzzle stops if conditions change
+            if (!ShouldKeepPuzzleActive())
+            {
+                StopPuzzle();
+            }
+        }
+    }
+
+    bool ShouldKeepPuzzleActive()
+    {
+        return FinalPuzzleCoordinator.Instance != null &&
+               FinalPuzzleCoordinator.Instance.bothPuzzlesActive;
+    }
+
+    [PunRPC]
+    public void ForceActivatePuzzle()
+    {
+        Debug.Log($"ForceActivatePuzzle RPC received for Player 1 - IsMine: {photonView.IsMine}");
+
+        int puzzleType = NetworkManager.Instance.GetLocalPlayerPuzzleType();
+        if (PhotonNetwork.LocalPlayer != null && puzzleType == 1 && !puzzleComplete && !isPuzzleActive)
+        {
+            isPuzzleActive = true;
+            syncedActive = true;
+
+            if (puzzleCoroutine == null)
+            {
+                puzzleCoroutine = StartCoroutine(FinalPuzzle());
+                Debug.Log("Player 1 puzzle STARTED via ForceActivatePuzzle");
+            }
+        }
+        else
+        {
+            Debug.Log($"ForceActivatePuzzle rejected - Player: {PhotonNetwork.LocalPlayer?.ActorNumber}, Complete: {puzzleComplete}, Active: {isPuzzleActive}");
+        }
     }
 
     bool ShouldActivatePuzzle()
@@ -229,6 +245,9 @@ public class FinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObservable
     {
         progress.value = newProgress;
         syncedProgress = newProgress;
+
+       
+        UpdateProgressColor();
     }
 
     [PunRPC]
@@ -346,53 +365,44 @@ public class FinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObservable
     [PunRPC]
     public void ResetPuzzleProgress()
     {
-        if (photonView.IsMine)
-        {
-            syncedProgress = 0f;
-            progress.value = 0f;
-            photonView.RPC("UpdateProgress", RpcTarget.All, 0f);
+        if (!photonView.IsMine) return;
 
-            if (puzzleCoroutine != null)
-            {
-                StopCoroutine(puzzleCoroutine);
-                puzzleCoroutine = null;
-            }
+        syncedProgress = 0f;
+        progress.value = 0f;
+        puzzleComplete = false;
+        isPuzzleActive = false;
 
-            isPuzzleActive = false;
-        }
-    }
-
-    [PunRPC]
-    public void ForceActivatePuzzle()
-    {
-        if (PhotonNetwork.LocalPlayer.ActorNumber == 1 && !puzzleComplete)
-        {
-            isPuzzleActive = true;
-            if (puzzleCoroutine == null)
-            {
-                puzzleCoroutine = StartCoroutine(FinalPuzzle());
-            }
-        }
-    }
-
-    [PunRPC]
-    public void StopPuzzle()
-    {
+        // Stop any running puzzle
         if (puzzleCoroutine != null)
         {
             StopCoroutine(puzzleCoroutine);
             puzzleCoroutine = null;
         }
 
+        // Update UI
+        UpdateProgressColor();
+        feedbackTxt.SetText("");
+        buttonTxt.SetText("");
+    }
+
+    [PunRPC]
+    public void StopPuzzle()
+    {
+        if (this == null || photonView == null) return;
+
         isPuzzleActive = false;
         waitingForInput = false;
 
-        // Clear UI
+        if (puzzleCoroutine != null)
+        {
+            StopCoroutine(puzzleCoroutine);
+            puzzleCoroutine = null;
+        }
+
         if (buttonTxt != null)
             buttonTxt.SetText("");
         if (feedbackTxt != null)
             feedbackTxt.gameObject.SetActive(false);
-
     }
 
 }

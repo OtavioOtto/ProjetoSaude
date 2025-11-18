@@ -85,6 +85,7 @@ public class PlayerBehaviours : MonoBehaviourPunCallbacks, IPunObservable
     void PlayerMovement()
     {
         int puzzleType = NetworkManager.Instance.GetLocalPlayerPuzzleType();
+
         // Update puzzle references if null
         if (puzzleType == 1 && finalPuzzle == null)
             finalPuzzle = FindFirstObjectByType<FinalPuzzleHandler>();
@@ -95,34 +96,37 @@ public class PlayerBehaviours : MonoBehaviourPunCallbacks, IPunObservable
         if (puzzleType == 2 && secondPlayerFinalPuzzle == null)
             secondPlayerFinalPuzzle = FindFirstObjectByType<SecondPlayerFinalPuzzleHandler>();
 
-
-        // Check puzzle state with null checks
+        // Check puzzle state with null checks - MORE ROBUST CHECK
         bool wasPuzzleActive = myPuzzleActive;
+
+        // Check if ANY puzzle is active (including skill check)
+        bool isAnyPuzzleActive = false;
+        bool isWirePuzzleActive = false;
 
         if (puzzleType == 1 && finalPuzzle != null)
         {
-            myPuzzleActive = finalPuzzle.isPuzzleActive;
+            isAnyPuzzleActive = finalPuzzle.isPuzzleActive;
         }
-        
         else if (puzzleType == 2 && secondPlayerFinalPuzzle != null)
         {
-            myPuzzleActive = secondPlayerFinalPuzzle.isPuzzleActive;
-        }
-        else
-        {
-            myPuzzleActive = false;
+            // Check both puzzle active AND skill check active for Player 2
+            isAnyPuzzleActive = secondPlayerFinalPuzzle.isPuzzleActive || secondPlayerFinalPuzzle.isSkillCheckActive;
         }
 
         if (puzzleType == 1 && wirePuzzle != null)
-            wirePuzzleActive = wirePuzzle.isPuzzleActive;
-        else
-            wirePuzzleActive = false;
+            isWirePuzzleActive = wirePuzzle.isPuzzleActive;
+
+        myPuzzleActive = isAnyPuzzleActive;
+        wirePuzzleActive = isWirePuzzleActive;
+
+        bool shouldBlockMovement = myPuzzleActive || wirePuzzleActive;
+
         if (wasPuzzleActive != myPuzzleActive)
         {
-            Debug.Log($"Puzzle active state changed: {myPuzzleActive}");
+            Debug.Log($"Puzzle active state changed: {myPuzzleActive}, Wire: {wirePuzzleActive}, Block Movement: {shouldBlockMovement}");
         }
 
-        if (!myPuzzleActive && !wirePuzzleActive)
+        if (!shouldBlockMovement)
         {
             float moveX = Input.GetAxisRaw("Horizontal");
             float moveY = Input.GetAxisRaw("Vertical");
@@ -141,6 +145,7 @@ public class PlayerBehaviours : MonoBehaviourPunCallbacks, IPunObservable
             // Puzzle is active - stop movement
             input = Vector2.zero;
             rb.linearVelocity = Vector2.zero; // Ensure physics stops too
+            Debug.Log($"Movement blocked - Puzzle: {myPuzzleActive}, Wire: {wirePuzzleActive}");
         }
     }
 

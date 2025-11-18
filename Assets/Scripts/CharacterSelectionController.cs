@@ -85,6 +85,7 @@ public class CharacterSelectionController : MonoBehaviourPunCallbacks
     public string GetCharacter1Name() { return character1Name; }
     public string GetCharacter2Name() { return character2Name; }
 
+
     void ShowConnectionError(string message)
     {
         selectionPanel.SetActive(false);
@@ -310,12 +311,15 @@ public class CharacterSelectionController : MonoBehaviourPunCallbacks
         }
         else if (scene.name == "MainMenu")
         {
-            // If we're in main menu but this controller exists, destroy it
-            if (PhotonNetwork.InRoom)
-            {
-                PhotonNetwork.LeaveRoom();
-            }
-            Destroy(gameObject);
+            // ?? REMOVER ou COMENTAR esta parte - não destruir aqui
+            // if (PhotonNetwork.InRoom)
+            // {
+            //     PhotonNetwork.LeaveRoom();
+            // }
+            // Destroy(gameObject);
+
+            // Apenas log para debug
+            Debug.Log("MainMenu loaded - CharacterSelectionController should not be here");
         }
     }
 }

@@ -59,6 +59,10 @@ MonoBehaviour:
   - RPC_CompletePuzzle
   - RPC_RequestPuzzleCompletion
   - RPC_DeactivatePathBlock
+  - StartDialogRPC
+  - StartDialogFromSerializedRPC
+  - TriggerDialogGlobally
+  - ResetAllPlayers
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 0

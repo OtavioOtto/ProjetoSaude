@@ -58,7 +58,7 @@ public class MainMenuController : MonoBehaviour
             case NetworkManager.ConnectionState.Disconnected:
             default:
                 connectionStatusText.color = Color.red;
-                startButton.interactable = false;
+                //startButton.interactable = false;
                 loadingIndicator.SetActive(true);
                 break;
         }

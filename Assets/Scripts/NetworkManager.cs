@@ -39,7 +39,7 @@ public class NetworkManager : MonoBehaviourPunCallbacks
         {
             foreach (var manager in managers)
             {
-                if (manager != this)
+                if (manager != this && manager.gameObject != null)
                 {
                     Destroy(manager.gameObject);
                 }
@@ -65,12 +65,121 @@ public class NetworkManager : MonoBehaviourPunCallbacks
         }
 
         PhotonNetwork.AutomaticallySyncScene = true;
+
+        // Subscribe to scene loaded event
+        SceneManager.sceneLoaded += OnSceneLoaded;
     }
 
-    void Start()
+    void OnDestroy()
     {
-        // Start connection process automatically
-        ConnectToPhoton();
+        // Unsubscribe from event
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        Debug.Log($"Scene loaded: {scene.name}");
+
+        // Clean up duplicates when loading MainMenu
+        if (scene.name == "MainMenu")
+        {
+            CleanUpDuplicates();
+        }
+    }
+
+    private void CleanUpDuplicates()
+    {
+        NetworkManager[] managers = FindObjectsByType<NetworkManager>(FindObjectsSortMode.None);
+        foreach (var manager in managers)
+        {
+            if (manager != Instance && manager.gameObject != null)
+            {
+                Debug.Log($"Destroying duplicate NetworkManager: {manager.gameObject.name}");
+                Destroy(manager.gameObject);
+            }
+        }
+    }
+
+    private void CleanUpAllPersistentObjects()
+    {
+        Debug.Log("Cleaning up all persistent objects...");
+
+        // Clean up FinalPuzzleCoordinator
+        FinalPuzzleCoordinator[] coordinators = FindObjectsByType<FinalPuzzleCoordinator>(FindObjectsSortMode.None);
+        foreach (var coordinator in coordinators)
+        {
+            if (coordinator != null && coordinator.gameObject != null)
+            {
+                Debug.Log($"Destroying FinalPuzzleCoordinator: {coordinator.gameObject.name}");
+                Destroy(coordinator.gameObject);
+            }
+        }
+
+        // Clean up DialogManager
+        DialogManager[] dialogManagers = FindObjectsByType<DialogManager>(FindObjectsSortMode.None);
+        foreach (var dm in dialogManagers)
+        {
+            if (dm != null && dm.gameObject != null && dm != DialogManager.Instance)
+            {
+                Debug.Log($"Destroying DialogManager: {dm.gameObject.name}");
+                Destroy(dm.gameObject);
+            }
+        }
+
+        // Clean up CharacterSelectionController
+        CharacterSelectionController[] charControllers = FindObjectsByType<CharacterSelectionController>(FindObjectsSortMode.None);
+        foreach (var controller in charControllers)
+        {
+            if (controller != null && controller.gameObject != null)
+            {
+                Debug.Log($"Destroying CharacterSelectionController: {controller.gameObject.name}");
+                Destroy(controller.gameObject);
+            }
+        }
+    }
+
+    IEnumerator HardResetCoroutine()
+    {
+        Debug.Log("=== HARD RESET STARTED ===");
+
+        // Clean up all persistent objects first
+        CleanUpAllPersistentObjects();
+
+        // Leave room if inside
+        if (PhotonNetwork.InRoom)
+        {
+            Debug.Log("Leaving room...");
+            PhotonNetwork.LeaveRoom();
+
+            // Wait with timeout
+            float timeout = 3f;
+            float elapsed = 0f;
+            while (PhotonNetwork.InRoom && elapsed < timeout)
+            {
+                elapsed += Time.deltaTime;
+                yield return null;
+            }
+        }
+
+        // Disconnect completely
+        if (PhotonNetwork.IsConnected)
+        {
+            Debug.Log("Disconnecting from Photon...");
+            PhotonNetwork.Disconnect();
+        }
+
+        // Wait a moment for disconnection
+        yield return new WaitForSeconds(1f);
+
+        Debug.Log("Loading MainMenu scene");
+        SceneManager.LoadScene("MainMenu");
+
+        // Clean up again after scene load
+        yield return new WaitForSeconds(0.5f);
+        CleanUpAllPersistentObjects();
+        CleanUpDuplicates();
+
+        Debug.Log("=== HARD RESET COMPLETED ===");
     }
 
     public void ConnectToPhoton()

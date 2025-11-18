@@ -4,6 +4,7 @@ using Photon.Pun;
 public class FinalPuzzleCollider : MonoBehaviourPunCallbacks
 {
     [SerializeField] private FinalPuzzleHandler handler;
+    [SerializeField] private GameObject warningTxt;
     public GameObject ui;
     public bool playerInside;
 
@@ -40,9 +41,13 @@ public class FinalPuzzleCollider : MonoBehaviourPunCallbacks
                     if (FinalPuzzleCoordinator.Instance != null)
                     {
                         FinalPuzzleCoordinator.Instance.photonView.RPC("ReportPlayerInPosition", RpcTarget.All, 1, true);
+                        Debug.Log("Reported Player 1 in position to coordinator");
                     }
                 }
             }
+
+            else if (puzzleType == 2)
+                warningTxt.SetActive(true);
         }
     }
 
@@ -65,6 +70,8 @@ public class FinalPuzzleCollider : MonoBehaviourPunCallbacks
                     }
                 }
             }
+            else if (puzzleType == 2)
+                warningTxt.SetActive(false);
         }
     }
 }

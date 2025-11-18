@@ -1,6 +1,7 @@
-using UnityEngine;
 using Photon.Pun;
 using System.Collections;
+using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class FinalPuzzleCoordinator : MonoBehaviourPunCallbacks
 {
@@ -9,6 +10,9 @@ public class FinalPuzzleCoordinator : MonoBehaviourPunCallbacks
     [Header("Puzzle References")]
     public FinalPuzzleHandler player1Puzzle;
     public SecondPlayerFinalPuzzleHandler player2Puzzle;
+
+    public int player1PuzzleViewID = 1;
+    public int player2PuzzleViewID = 2;
 
     [Header("Puzzle States")]
     public bool player1InPosition;
@@ -28,7 +32,15 @@ public class FinalPuzzleCoordinator : MonoBehaviourPunCallbacks
             Destroy(gameObject);
         }
     }
-
+    void Update()
+    {
+        // Allow manual reset with 0 key (for testing)
+        if (Input.GetKeyDown(KeyCode.Alpha0) && PhotonNetwork.IsMasterClient)
+        {
+            Debug.Log("Master client forcing game end via 0 key");
+            EndGame();
+        }
+    }
     [PunRPC]
     public void ReportPlayerInPosition(int playerNumber, bool inPosition)
     {
@@ -45,29 +57,31 @@ public class FinalPuzzleCoordinator : MonoBehaviourPunCallbacks
     {
         puzzlesCompleted++;
 
+        Debug.Log($"Puzzle completed by Player {playerNumber}. Total completed: {puzzlesCompleted}");
+
         if (puzzlesCompleted >= 2)
         {
-            // Stop both puzzles
-            StopAllPuzzles();
-            // Trigger your win condition here
-        }
-        else
-        {
-            // If one puzzle completed, stop the other one too since they need to end together
-            StopAllPuzzles();
+            Debug.Log("Both puzzles completed! Ending game...");
+            EndGame();
         }
     }
 
-    private void StopAllPuzzles()
+    void EndGame()
     {
-        // Stop Player 1's puzzle
-        if (player1Puzzle != null)
+        // Notify all clients to reset
+        photonView.RPC("ResetAllPlayers", RpcTarget.All);
+    }
+
+    void StopAllPuzzles()
+    {
+        // Player 1
+        if (player1Puzzle != null && player1Puzzle.photonView != null && player1Puzzle.photonView.ViewID > 0)
         {
             player1Puzzle.photonView.RPC("StopPuzzle", RpcTarget.All);
         }
 
-        // Stop Player 2's puzzle  
-        if (player2Puzzle != null)
+        // Player 2
+        if (player2Puzzle != null && player2Puzzle.photonView != null && player2Puzzle.photonView.ViewID > 0)
         {
             player2Puzzle.photonView.RPC("StopPuzzle", RpcTarget.All);
         }
@@ -78,17 +92,30 @@ public class FinalPuzzleCoordinator : MonoBehaviourPunCallbacks
     [PunRPC]
     public void ReportSkillCheckFailure()
     {
-        // Reset both puzzles when Player 2 fails skill check
-        if (player1Puzzle != null)
+        Debug.Log("Coordinator: Resetting both puzzles due to skill check failure");
+
+        // Reset by PhotonView ID (most reliable method)
+        PhotonView pv1 = PhotonView.Find(player1PuzzleViewID);
+        if (pv1 != null)
         {
-            player1Puzzle.ResetPuzzleProgress();
+            pv1.RPC("ResetPuzzleProgress", RpcTarget.All);
+            Debug.Log("Reset Player 1 puzzle via ViewID");
+        }
+        else
+        {
+            Debug.LogWarning($"Player 1 puzzle with ViewID {player1PuzzleViewID} not found");
         }
 
-        if (player2Puzzle != null)
+        PhotonView pv2 = PhotonView.Find(player2PuzzleViewID);
+        if (pv2 != null)
         {
-            player2Puzzle.ResetPuzzle();
+            pv2.RPC("ResetPuzzle", RpcTarget.All);
+            Debug.Log("Reset Player 2 puzzle via ViewID");
         }
-
+        else
+        {
+            Debug.LogWarning($"Player 2 puzzle with ViewID {player2PuzzleViewID} not found");
+        }
     }
 
     private void CheckPuzzleActivation()
@@ -118,18 +145,14 @@ public class FinalPuzzleCoordinator : MonoBehaviourPunCallbacks
     {
         Debug.Log("Coordinator: Starting simultaneous puzzle activation");
 
-        // First, ensure Player 2 has ownership of their puzzle
+        // Small delay to ensure both players are ready
+        yield return new WaitForSeconds(0.3f);
+
+        // Activate Player 2's puzzle first with ownership handling
         if (player2Puzzle != null && player2Puzzle.photonView != null)
         {
-            // If Player 2 doesn't own their puzzle, request ownership
-            if (!player2Puzzle.photonView.IsMine && PhotonNetwork.LocalPlayer != null && PhotonNetwork.LocalPlayer.ActorNumber == 2)
-            {
-                Debug.Log("Coordinator: Player 2 requesting ownership of their puzzle");
-                player2Puzzle.photonView.RequestOwnership();
-                yield return new WaitForSeconds(0.1f); // Small delay for ownership transfer
-            }
 
-            // Activate Player 2's puzzle
+
             player2Puzzle.photonView.RPC("ForceActivatePuzzle", RpcTarget.All);
             Debug.Log("Coordinator: Activated Player 2 puzzle");
         }
@@ -146,6 +169,8 @@ public class FinalPuzzleCoordinator : MonoBehaviourPunCallbacks
 
         Debug.Log("Coordinator: Both puzzles activated");
     }
+
+
 
 
 }
