@@ -1,4 +1,3 @@
-// FinalPuzzleCollider.cs (Updated)
 using UnityEngine;
 using Photon.Pun;
 
@@ -16,9 +15,8 @@ public class FinalPuzzleCollider : MonoBehaviourPunCallbacks
             handler = FindFirstObjectByType<FinalPuzzleHandler>();
         }
 
-        // Only enable for players who selected Alex (character1)
         int puzzleType = NetworkManager.Instance.GetLocalPlayerPuzzleType();
-        if (puzzleType != 1) // Not Alex
+        if (puzzleType != 1)
         {
             enabled = false;
             return;

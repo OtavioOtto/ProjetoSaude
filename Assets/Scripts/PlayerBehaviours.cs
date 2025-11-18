@@ -16,6 +16,7 @@ public class PlayerBehaviours : MonoBehaviourPunCallbacks, IPunObservable
     [Header("Puzzle References")]
     [SerializeField] private FinalPuzzleHandler finalPuzzle;
     [SerializeField] private SecondPlayerFinalPuzzleHandler secondPlayerFinalPuzzle;
+    [SerializeField] private WiresHandler wirePuzzle;
 
     // Network synced variables
     private Vector2 networkInput;
@@ -24,6 +25,7 @@ public class PlayerBehaviours : MonoBehaviourPunCallbacks, IPunObservable
     private Vector3 networkScale;
 
     public bool myPuzzleActive;
+    public bool wirePuzzleActive;
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -45,6 +47,7 @@ public class PlayerBehaviours : MonoBehaviourPunCallbacks, IPunObservable
         if (puzzleType == 1) // Alex - FinalPuzzleHandler
         {
             finalPuzzle = FindFirstObjectByType<FinalPuzzleHandler>();
+            wirePuzzle = FindFirstObjectByType<WiresHandler>();
         }
         else // Morfeus - SecondPlayerFinalPuzzleHandler
         {
@@ -81,36 +84,45 @@ public class PlayerBehaviours : MonoBehaviourPunCallbacks, IPunObservable
 
     void PlayerMovement()
     {
+        int puzzleType = NetworkManager.Instance.GetLocalPlayerPuzzleType();
         // Update puzzle references if null
-        if (PhotonNetwork.LocalPlayer.ActorNumber == 1 && finalPuzzle == null)
+        if (puzzleType == 1 && finalPuzzle == null)
             finalPuzzle = FindFirstObjectByType<FinalPuzzleHandler>();
 
-        if (PhotonNetwork.LocalPlayer.ActorNumber == 2 && secondPlayerFinalPuzzle == null)
+        if (puzzleType == 1 && wirePuzzle == null)
+            wirePuzzle = FindFirstObjectByType<WiresHandler>();
+
+        if (puzzleType == 2 && secondPlayerFinalPuzzle == null)
             secondPlayerFinalPuzzle = FindFirstObjectByType<SecondPlayerFinalPuzzleHandler>();
+
 
         // Check puzzle state with null checks
         bool wasPuzzleActive = myPuzzleActive;
 
-        if (PhotonNetwork.LocalPlayer.ActorNumber == 1 && finalPuzzle != null)
+        if (puzzleType == 1 && finalPuzzle != null)
         {
             myPuzzleActive = finalPuzzle.isPuzzleActive;
         }
-        else if (PhotonNetwork.LocalPlayer.ActorNumber == 2 && secondPlayerFinalPuzzle != null)
+        
+        else if (puzzleType == 2 && secondPlayerFinalPuzzle != null)
         {
             myPuzzleActive = secondPlayerFinalPuzzle.isPuzzleActive;
         }
         else
         {
-            myPuzzleActive = false; // Default to false if no puzzle found
+            myPuzzleActive = false;
         }
 
-        // Debug state changes
+        if (puzzleType == 1 && wirePuzzle != null)
+            wirePuzzleActive = wirePuzzle.isPuzzleActive;
+        else
+            wirePuzzleActive = false;
         if (wasPuzzleActive != myPuzzleActive)
         {
             Debug.Log($"Puzzle active state changed: {myPuzzleActive}");
         }
 
-        if (!myPuzzleActive)
+        if (!myPuzzleActive && !wirePuzzleActive)
         {
             float moveX = Input.GetAxisRaw("Horizontal");
             float moveY = Input.GetAxisRaw("Vertical");

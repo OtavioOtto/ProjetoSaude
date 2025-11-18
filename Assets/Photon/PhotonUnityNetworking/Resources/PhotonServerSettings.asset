@@ -56,6 +56,9 @@ MonoBehaviour:
   - ResetPuzzle
   - ResetPuzzleProgress
   - StopPuzzle
+  - RPC_CompletePuzzle
+  - RPC_RequestPuzzleCompletion
+  - RPC_DeactivatePathBlock
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 0

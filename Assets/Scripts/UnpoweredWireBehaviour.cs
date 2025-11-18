@@ -15,17 +15,22 @@ public class UnpoweredWireBehaviour : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.GetComponent<PoweredWireStats>()) 
+        if (collision.GetComponent<PoweredWireStats>())
         {
             PoweredWireStats statsPower = collision.GetComponent<PoweredWireStats>();
-            if (statsPower.color == stats.color) 
+            if (statsPower.color == stats.color)
             {
                 statsPower.connected = true;
-                statsPower.connectedPosition = gameObject.transform.position;
+                statsPower.movable = true;
+
+                // Only copy X and Y, maintain powered wire's Z position
+                Vector3 connectedPos = transform.position;
+                connectedPos.z = statsPower.transform.position.z; // Keep powered wire's Z
+                statsPower.connectedPosition = connectedPos;
+
                 stats.connected = true;
             }
         }
-
     }
 
     private void OnTriggerExit2D(Collider2D collision)
