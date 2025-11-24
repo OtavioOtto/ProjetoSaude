@@ -17,7 +17,7 @@ GameObject:
   - component: {fileID: -6596869908970576576}
   - component: {fileID: 7166704610497490285}
   - component: {fileID: 6214321210784154294}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: AlexCraxy
   m_TagString: Player
   m_Icon: {fileID: 0}
@@ -181,7 +181,7 @@ BoxCollider2D:
     m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 64
   m_LayerOverridePriority: 0
   m_ForceSendLayers:
     serializedVersion: 2

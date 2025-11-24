@@ -301,25 +301,30 @@ public class CharacterSelectionController : MonoBehaviourPunCallbacks
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        Debug.Log($"Scene loaded: {scene.name}");
+        Debug.Log($"CharacterSelectionController: Scene loaded: {scene.name}");
 
         if (scene.name == "GameScene")
         {
-            // Game started successfully - destroy this controller
-            Debug.Log("Game scene loaded - destroying character selection controller");
-            Destroy(gameObject);
+            // Wait a frame before destroying to ensure smooth transition
+            StartCoroutine(DestroyAfterDelay());
         }
         else if (scene.name == "MainMenu")
         {
-            // ?? REMOVER ou COMENTAR esta parte - não destruir aqui
-            // if (PhotonNetwork.InRoom)
-            // {
-            //     PhotonNetwork.LeaveRoom();
-            // }
-            // Destroy(gameObject);
+            // If we're back in main menu, we should clean up
+            StartCoroutine(DestroyAfterDelay());
+        }
+        // For CharacterSelection scene, do nothing - we should already be here
+    }
 
-            // Apenas log para debug
-            Debug.Log("MainMenu loaded - CharacterSelectionController should not be here");
+    private IEnumerator DestroyAfterDelay()
+    {
+        yield return new WaitForSeconds(0.1f);
+
+        // Double-check we're not needed anymore
+        if (SceneManager.GetActiveScene().name != "CharacterSelection")
+        {
+            Debug.Log($"Destroying CharacterSelectionController in {SceneManager.GetActiveScene().name}");
+            Destroy(gameObject);
         }
     }
 }

@@ -229,6 +229,7 @@ public class SecondPlayerFinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObs
 
     }
 
+
     // Called by the collider when player enters
     // In SecondPlayerFinalPuzzleHandler.cs - Update the ActivatePuzzle method:
     public void ActivatePuzzle()

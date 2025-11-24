@@ -632,7 +632,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 590840314}
-  - component: {fileID: 590840312}
   - component: {fileID: 590840311}
   m_Layer: 0
   m_Name: NetworkController
@@ -657,28 +656,6 @@ MonoBehaviour:
   - {fileID: 9129922548186712662, guid: b69d27273ac81664590c7867114ff4ec, type: 3}
   - {fileID: 1580577623285310444, guid: 82ddbbbbb1b2c7140ab40e631930d037, type: 3}
   gameSceneName: GameScene
---- !u!114 &590840312
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 590840310}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: aa584fbee541324448dd18d8409c7a41, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: PhotonUnityNetworking::Photon.Pun.PhotonView
-  ObservedComponentsFoldoutOpen: 1
-  Group: 0
-  prefixField: -1
-  Synchronization: 3
-  OwnershipTransfer: 0
-  observableSearch: 2
-  ObservedComponents: []
-  sceneViewId: 15
-  InstantiationId: 0
-  isRuntimeInstantiated: 0
 --- !u!4 &590840314
 Transform:
   m_ObjectHideFlags: 0

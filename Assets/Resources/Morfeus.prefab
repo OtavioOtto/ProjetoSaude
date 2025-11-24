@@ -154,7 +154,7 @@ GameObject:
   - component: {fileID: -4581783057805947756}
   - component: {fileID: 3299765748405924887}
   - component: {fileID: -2649693236201003037}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Morfeus
   m_TagString: Player
   m_Icon: {fileID: 0}
@@ -318,7 +318,7 @@ BoxCollider2D:
     m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 64
   m_LayerOverridePriority: 0
   m_ForceSendLayers:
     serializedVersion: 2

@@ -16,7 +16,30 @@ public class MainMenuController : MonoBehaviour
 
     void Start()
     {
+
+        if (NetworkManager.Instance == null)
+        {
+            Debug.LogWarning("[MainMenuController] NetworkManager.Instance is null — something went wrong.");
+            return;
+        }
         startButton.onClick.AddListener(StartGame);
+
+        // Auto-attempt connection/reconnection when returning to main menu
+        if (!PhotonNetwork.IsConnected)
+        {
+            Debug.Log("MainMenu loaded - not connected, attempting connection");
+            NetworkManager.Instance.ConnectToPhoton();
+        }
+        else if (!PhotonNetwork.InLobby)
+        {
+            Debug.Log("MainMenu loaded - connected but not in lobby, rejoining lobby");
+            NetworkManager.Instance.RejoinLobbyAfterReset();
+        }
+        else
+        {
+            Debug.Log("MainMenu loaded - already in lobby");
+        }
+
         UpdateConnectionStatus();
 
         // Hide error panel initially
@@ -40,6 +63,9 @@ public class MainMenuController : MonoBehaviour
         string status = NetworkManager.Instance.GetConnectionStatus();
         connectionStatusText.text = "Status: " + status;
 
+        // More accurate debug info
+        Debug.Log($"UpdateConnectionStatus: UI Status={status}, Photon State={PhotonNetwork.NetworkClientState}, InRoom={PhotonNetwork.InRoom}, InLobby={PhotonNetwork.InLobby}");
+
         switch (NetworkManager.Instance.GetCurrentState())
         {
             case NetworkManager.ConnectionState.InLobby:
@@ -49,16 +75,30 @@ public class MainMenuController : MonoBehaviour
                 break;
 
             case NetworkManager.ConnectionState.ConnectedToMaster:
+                connectionStatusText.color = Color.yellow;
+                connectionStatusText.text = "Status: Connected"; // More user-friendly
+                startButton.interactable = true; // Allow starting even if just connected to master
+                loadingIndicator.SetActive(false);
+                break;
+
             case NetworkManager.ConnectionState.Connecting:
                 connectionStatusText.color = Color.yellow;
                 startButton.interactable = false;
                 loadingIndicator.SetActive(true);
                 break;
 
+            case NetworkManager.ConnectionState.InRoom:
+                // This shouldn't happen in main menu, but if it does, show appropriate status
+                connectionStatusText.color = Color.blue;
+                connectionStatusText.text = "Status: In Game";
+                startButton.interactable = false;
+                loadingIndicator.SetActive(false);
+                break;
+
             case NetworkManager.ConnectionState.Disconnected:
             default:
                 connectionStatusText.color = Color.red;
-                //startButton.interactable = false;
+                startButton.interactable = false;
                 loadingIndicator.SetActive(true);
                 break;
         }

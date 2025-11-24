@@ -26,6 +26,16 @@ public class FinalPuzzleCoordinator : MonoBehaviourPunCallbacks
         {
             Instance = this;
             DontDestroyOnLoad(gameObject);
+
+            // Ensure we have a PhotonView component
+            PhotonView pv = GetComponent<PhotonView>();
+            if (pv == null)
+            {
+                pv = gameObject.AddComponent<PhotonView>();
+                pv.ViewID = 999; // Use a fixed ViewID for the coordinator
+                pv.OwnershipTransfer = OwnershipOption.Takeover;
+                pv.Synchronization = ViewSynchronization.UnreliableOnChange;
+            }
         }
         else
         {
@@ -35,9 +45,28 @@ public class FinalPuzzleCoordinator : MonoBehaviourPunCallbacks
     void Update()
     {
         // Allow manual reset with 0 key (for testing)
-        if (Input.GetKeyDown(KeyCode.Alpha0) && PhotonNetwork.IsMasterClient)
+        if (Input.GetKeyDown(KeyCode.Alpha0))
         {
-            Debug.Log("Master client forcing game end via 0 key");
+            if (PhotonNetwork.IsMasterClient)
+            {
+                Debug.Log("Master client forcing game end via 0 key");
+                EndGame();
+            }
+            else
+            {
+                // Non-master client requests game end from master
+                Debug.Log("Non-master client requesting game end via 0 key");
+                photonView.RPC("RequestGameEnd", RpcTarget.MasterClient);
+            }
+        }
+    }
+
+    [PunRPC]
+    void RequestGameEnd()
+    {
+        Debug.Log("Master client received game end request from another player");
+        if (PhotonNetwork.IsMasterClient)
+        {
             EndGame();
         }
     }
@@ -68,8 +97,53 @@ public class FinalPuzzleCoordinator : MonoBehaviourPunCallbacks
 
     void EndGame()
     {
-        // Notify all clients to reset
-        photonView.RPC("ResetAllPlayers", RpcTarget.All);
+        Debug.Log($"EndGame called by player {PhotonNetwork.LocalPlayer.ActorNumber} - Initiating complete game reset");
+
+        // Reset coordinator state immediately
+        player1InPosition = false;
+        player2InPosition = false;
+        bothPuzzlesActive = false;
+        puzzlesCompleted = 0;
+
+        // Notify all clients to reset - but don't try to call RPCs on puzzle objects
+        if (photonView != null && photonView.IsMine)
+        {
+            photonView.RPC("ResetAllPlayers", RpcTarget.All);
+            Debug.Log("ResetAllPlayers RPC sent to all players");
+        }
+        else
+        {
+            Debug.Log("EndGame called but no valid photonView, resetting locally");
+            // Fallback: reset locally
+            ResetAllPlayers();
+        }
+    }
+
+    [PunRPC]
+    public void ResetAllPlayers()
+    {
+        Debug.Log($"ResetAllPlayers RPC received by player {PhotonNetwork.LocalPlayer?.ActorNumber} - Resetting game completely");
+
+        // Stop trying to call RPCs on puzzle handlers - they're being destroyed anyway
+        // Instead, just proceed with the main reset
+
+        // Reset coordinator state locally
+        player1InPosition = false;
+        player2InPosition = false;
+        bothPuzzlesActive = false;
+        puzzlesCompleted = 0;
+
+        // Use the NetworkManager's hard reset coroutine
+        if (NetworkManager.Instance != null)
+        {
+            NetworkManager.Instance.StartCoroutine(NetworkManager.Instance.HardResetCoroutine());
+        }
+        else
+        {
+            // Fallback: Load main menu directly if NetworkManager isn't available
+            Debug.LogWarning("NetworkManager instance not found, loading main menu directly");
+            SceneManager.LoadScene("MainMenu");
+        }
     }
 
     void StopAllPuzzles()

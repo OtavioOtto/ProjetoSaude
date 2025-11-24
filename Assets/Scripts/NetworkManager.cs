@@ -1,10 +1,11 @@
 // NetworkManager.cs
-using UnityEngine;
 using Photon.Pun;
 using Photon.Realtime;
-using System.Collections.Generic;
-using UnityEngine.SceneManagement;
 using System.Collections;
+using System.Collections.Generic;
+using System.Security.Cryptography;
+using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class NetworkManager : MonoBehaviourPunCallbacks
 {
@@ -13,9 +14,10 @@ public class NetworkManager : MonoBehaviourPunCallbacks
 
     private Dictionary<int, string> selectedCharacters = new Dictionary<int, string>();
 
+
     private const string CHARACTER_MORFEUS = "Morfeus";
     private const string CHARACTER_ALEXCRAXY = "AlexCraxy";
-
+    private bool triedToAddPhotonView = false;
     // Connection states
     public enum ConnectionState
     {
@@ -33,43 +35,123 @@ public class NetworkManager : MonoBehaviourPunCallbacks
 
     void Awake()
     {
-        // Destroy any duplicate NetworkManagers immediately
         NetworkManager[] managers = FindObjectsByType<NetworkManager>(FindObjectsSortMode.None);
-        if (managers.Length > 1)
+
+        // Check if there's already a NetworkManager in DontDestroyOnLoad
+        NetworkManager persistentManager = null;
+        foreach (var manager in managers)
         {
-            foreach (var manager in managers)
+            if (manager.gameObject.scene.name == "DontDestroyOnLoad")
             {
-                if (manager != this && manager.gameObject != null)
-                {
-                    Destroy(manager.gameObject);
-                }
+                persistentManager = manager;
+                break;
             }
         }
 
+        // If there's already a persistent manager, destroy this new one
+        if (persistentManager != null && persistentManager != this)
+        {
+            Debug.Log($"[NetworkManager] DESTROYING scene instance: {gameObject.name} (in scene: {gameObject.scene.name})");
+            Destroy(gameObject);
+            return;
+        }
+
+        // If we get here, this should become the persistent instance
         if (Instance == null)
         {
             Instance = this;
             DontDestroyOnLoad(gameObject);
 
-            // Ensure PhotonView has unique ID
-            PhotonView pv = GetComponent<PhotonView>();
-            if (pv != null && pv.ViewID == 0)
-            {
-                pv.ViewID = 1000;
-            }
+            PhotonNetwork.AutomaticallySyncScene = true;
+            SceneManager.sceneLoaded += OnSceneLoaded;
         }
         else if (Instance != this)
         {
+            Debug.Log($"[NetworkManager] DESTROYING duplicate: {gameObject.name}");
             Destroy(gameObject);
             return;
         }
+    }
+    private void Start()
+    {
+        // Periodic connection check
+        StartCoroutine(ConnectionWatchdog());
 
-        PhotonNetwork.AutomaticallySyncScene = true;
-
-        // Subscribe to scene loaded event
-        SceneManager.sceneLoaded += OnSceneLoaded;
+        // Delayed duplicate cleanup as backup
+        StartCoroutine(DelayedDuplicateCleanup());
     }
 
+    private IEnumerator DelayedDuplicateCleanup()
+    {
+        yield return new WaitForSeconds(1f);
+        CleanUpDuplicates();
+    }
+
+    private void CleanUpDuplicates()
+    {
+        NetworkManager[] managers = FindObjectsByType<NetworkManager>(FindObjectsSortMode.None);
+
+        Debug.Log($"Found {managers.Length} NetworkManagers during cleanup");
+
+        foreach (var manager in managers)
+        {
+            // Destroy any NetworkManager that is NOT this instance AND is in a normal scene (not DontDestroyOnLoad)
+            if (manager != Instance && manager.gameObject.scene.name != "DontDestroyOnLoad")
+            {
+                Debug.Log($"Destroying scene NetworkManager: {manager.gameObject.name} (in scene: {manager.gameObject.scene.name})");
+                //Destroy(manager.gameObject);
+            }
+            else if (manager != Instance)
+            {
+                Debug.Log($"Found duplicate but it's in DontDestroyOnLoad - keeping: {manager.gameObject.name}");
+            }
+        }
+    }
+    private void Update()
+    {
+
+        if (!triedToAddPhotonView && PhotonNetwork.IsConnected && GetComponent<PhotonView>() == null)
+        {
+            PhotonView pv = gameObject.AddComponent<PhotonView>();
+            pv.ViewID = 999; //  ID fixo para o NetworkManager (não colide com players)
+            triedToAddPhotonView = true;
+            Debug.Log("[NetworkManager] PhotonView added with ViewID 999 to persistent instance.");
+        }
+        // Sync our internal state with Photon's actual state
+        if (PhotonNetwork.IsConnected && currentState == ConnectionState.Disconnected)
+        {
+            // If we're actually connected but think we're disconnected, fix the state
+            if (PhotonNetwork.InLobby)
+            {
+                currentState = ConnectionState.InLobby;
+            }
+            else if (PhotonNetwork.InRoom)
+            {
+                currentState = ConnectionState.InRoom;
+            }
+            else if (PhotonNetwork.IsConnected)
+            {
+                currentState = ConnectionState.ConnectedToMaster;
+            }
+
+            Debug.Log($"Fixed state mismatch: Photon={PhotonNetwork.NetworkClientState}, OurState={currentState}");
+        }
+    }
+    private IEnumerator ConnectionWatchdog()
+    {
+        while (true)
+        {
+            yield return new WaitForSeconds(5f);
+
+            if (PhotonNetwork.IsConnected && !PhotonNetwork.InRoom &&
+                currentState == ConnectionState.InRoom)
+            {
+                Debug.LogWarning("Unexpectedly left room, reconnecting...");
+                currentState = ConnectionState.InLobby;
+                PhotonNetwork.JoinLobby();
+            }
+        }
+    }
     void OnDestroy()
     {
         // Unsubscribe from event
@@ -78,25 +160,36 @@ public class NetworkManager : MonoBehaviourPunCallbacks
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        Debug.Log($"Scene loaded: {scene.name}");
+        Debug.Log($"Scene loaded: {scene.name}, Photon State: {PhotonNetwork.NetworkClientState}");
 
-        // Clean up duplicates when loading MainMenu
         if (scene.name == "MainMenu")
         {
             CleanUpDuplicates();
-        }
-    }
 
-    private void CleanUpDuplicates()
-    {
-        NetworkManager[] managers = FindObjectsByType<NetworkManager>(FindObjectsSortMode.None);
-        foreach (var manager in managers)
-        {
-            if (manager != Instance && manager.gameObject != null)
+            // Reset state when returning to main menu
+            if (!PhotonNetwork.IsConnected)
             {
-                Debug.Log($"Destroying duplicate NetworkManager: {manager.gameObject.name}");
-                Destroy(manager.gameObject);
+                currentState = ConnectionState.Disconnected;
+                wantsToJoinRoom = false;
+                selectedCharacters.Clear();
+                Debug.Log("Reset NetworkManager state for MainMenu");
             }
+            else if (PhotonNetwork.InLobby)
+            {
+                currentState = ConnectionState.InLobby;
+                Debug.Log("MainMenu loaded - connected to lobby");
+            }
+            else if (PhotonNetwork.IsConnected)
+            {
+                currentState = ConnectionState.ConnectedToMaster;
+                Debug.Log("MainMenu loaded - connected to master server");
+            }
+
+        }
+        else if (scene.name == "GameScene" && PhotonNetwork.InRoom)
+        {
+            currentState = ConnectionState.InRoom;
+            Debug.Log("Game scene loaded - setting state to InRoom");
         }
     }
 
@@ -138,12 +231,9 @@ public class NetworkManager : MonoBehaviourPunCallbacks
         }
     }
 
-    IEnumerator HardResetCoroutine()
+    public IEnumerator HardResetCoroutine()
     {
         Debug.Log("=== HARD RESET STARTED ===");
-
-        // Clean up all persistent objects first
-        CleanUpAllPersistentObjects();
 
         // Leave room if inside
         if (PhotonNetwork.InRoom)
@@ -151,7 +241,7 @@ public class NetworkManager : MonoBehaviourPunCallbacks
             Debug.Log("Leaving room...");
             PhotonNetwork.LeaveRoom();
 
-            // Wait with timeout
+            // Wait with timeout for room leave to complete
             float timeout = 3f;
             float elapsed = 0f;
             while (PhotonNetwork.InRoom && elapsed < timeout)
@@ -159,27 +249,72 @@ public class NetworkManager : MonoBehaviourPunCallbacks
                 elapsed += Time.deltaTime;
                 yield return null;
             }
-        }
 
-        // Disconnect completely
-        if (PhotonNetwork.IsConnected)
-        {
-            Debug.Log("Disconnecting from Photon...");
-            PhotonNetwork.Disconnect();
+            if (!PhotonNetwork.InRoom)
+            {
+                Debug.Log("Successfully left room");
+                currentState = ConnectionState.ConnectedToMaster;
+            }
         }
-
-        // Wait a moment for disconnection
-        yield return new WaitForSeconds(1f);
 
         Debug.Log("Loading MainMenu scene");
         SceneManager.LoadScene("MainMenu");
 
-        // Clean up again after scene load
+        // Wait for scene to fully load BEFORE cleaning up objects
         yield return new WaitForSeconds(0.5f);
-        CleanUpAllPersistentObjects();
+
+        // Clean up all persistent objects AFTER scene load
         CleanUpDuplicates();
+        CleanUpAllPersistentObjects();
+
+        // After scene load, ensure we rejoin lobby
+        if (PhotonNetwork.IsConnected && !PhotonNetwork.InLobby)
+        {
+            Debug.Log("Rejoining lobby after reset...");
+            PhotonNetwork.JoinLobby();
+
+            // Wait a bit for lobby join to complete
+            yield return new WaitForSeconds(1f);
+
+            if (PhotonNetwork.InLobby)
+            {
+                currentState = ConnectionState.InLobby;
+                Debug.Log("Successfully rejoined lobby");
+            }
+            else
+            {
+                Debug.LogWarning("Failed to rejoin lobby, but still connected to master");
+                currentState = ConnectionState.ConnectedToMaster;
+            }
+        }
+        else if (PhotonNetwork.IsConnected && PhotonNetwork.InLobby)
+        {
+            currentState = ConnectionState.InLobby;
+            Debug.Log("Already in lobby after reset");
+        }
+
 
         Debug.Log("=== HARD RESET COMPLETED ===");
+    }
+
+    public void RejoinLobbyAfterReset()
+    {
+        if (!PhotonNetwork.IsConnected)
+        {
+            Debug.Log("Not connected to Photon, connecting...");
+            ConnectToPhoton();
+            return;
+        }
+
+        if (PhotonNetwork.InLobby)
+        {
+            currentState = ConnectionState.InLobby;
+            Debug.Log("Already in lobby");
+            return;
+        }
+
+        Debug.Log("Attempting to rejoin lobby...");
+        PhotonNetwork.JoinLobby();
     }
 
     public void ConnectToPhoton()
@@ -437,7 +572,7 @@ public class NetworkManager : MonoBehaviourPunCallbacks
         }
     }
 
-
+    
 
     public override void OnPlayerEnteredRoom(Player newPlayer)
     {
@@ -466,20 +601,33 @@ public class NetworkManager : MonoBehaviourPunCallbacks
 
     public override void OnLeftRoom()
     {
+        Debug.Log($"OnLeftRoom called. Current scene: {SceneManager.GetActiveScene().name}");
+
         // Clear selections when leaving room
         selectedCharacters.Clear();
-        currentState = ConnectionState.InLobby;
 
-        // Rejoin lobby when leaving room
-        if (PhotonNetwork.IsConnected)
+        // Only set to InLobby if we're actually going to stay in lobby
+        // Don't automatically rejoin lobby if we're transitioning to game scene
+        if (SceneManager.GetActiveScene().name == "MainMenu" || SceneManager.GetActiveScene().name == "CharacterSelection")
         {
-            PhotonNetwork.JoinLobby();
+            currentState = ConnectionState.InLobby;
+
+            // Rejoin lobby when leaving room
+            if (PhotonNetwork.IsConnected && !PhotonNetwork.InLobby)
+            {
+                PhotonNetwork.JoinLobby();
+            }
+        }
+        else
+        {
+            // We're probably transitioning to game scene, don't change state
+            Debug.Log("OnLeftRoom during game transition - keeping current state");
         }
     }
 
     public override void OnDisconnected(DisconnectCause cause)
     {
-        Debug.Log("Disconnected from Photon: " + cause);
+
         currentState = ConnectionState.Disconnected;
         wantsToJoinRoom = false;
 
