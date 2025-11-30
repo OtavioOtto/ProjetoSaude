@@ -36,7 +36,6 @@ public class SecondPlayerFinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObs
     {
         _photonView = GetComponent<PhotonView>();
 
-        // If PhotonView is null, try to find it
         if (_photonView == null)
         {
             _photonView = FindFirstObjectByType<PhotonView>();
@@ -57,7 +56,6 @@ public class SecondPlayerFinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObs
         {
         }
 
-        // Initially hide the skill check UI
         if (skillCheck != null)
             skillCheck.SetActive(false);
 
@@ -68,7 +66,6 @@ public class SecondPlayerFinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObs
         int puzzleType = NetworkManager.Instance.GetLocalPlayerPuzzleType();
         if (!photonView.IsMine || puzzleType != 2) return;
 
-        // Debug log to track puzzle state
         if (isPuzzleActive && !puzzleComplete && Time.frameCount % 60 == 0)
         {
             Debug.Log($"Puzzle Active: {isPuzzleActive}, Skill Check Active: {isSkillCheckActive}, Time since last: {Time.time - lastSkillCheckTime}");
@@ -80,7 +77,6 @@ public class SecondPlayerFinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObs
             return;
         }
 
-        // Skill check activation - improved logic
         if (isPuzzleActive && !puzzleComplete && !isSkillCheckActive)
         {
             float timeSinceLastCheck = Time.time - lastSkillCheckTime;
@@ -103,20 +99,17 @@ public class SecondPlayerFinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObs
     {
         isSkillCheckActive = true;
 
-        // Show the skill check UI
         if (skillCheck != null)
         {
             skillCheck.SetActive(true);
         }
 
-        // Randomize success zone position
         successZoneAngle = Random.Range(65f, 290f);
         if (successZone != null)
         {
             successZone.transform.rotation = Quaternion.Euler(0, 0, successZoneAngle);
         }
 
-        // Reset pointer position
         currentAngle = 0f;
         if (pointer != null)
         {
@@ -129,7 +122,6 @@ public class SecondPlayerFinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObs
 
     void UpdateSkillCheck()
     {
-        // Rotate pointer
         currentAngle += pointerSpeed * Time.deltaTime;
         if (currentAngle >= 360f) currentAngle -= 360f;
 
@@ -138,14 +130,12 @@ public class SecondPlayerFinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObs
             pointer.rotation = Quaternion.Euler(0, 0, currentAngle);
         }
 
-        // Check for space input
         if (Input.GetKeyDown(KeyCode.Space))
         {
             CheckSkillCheckResult();
         }
 
-        // Auto-fail if too slow
-        if (Time.time - lastSkillCheckTime > 5f) // Increased timeout
+        if (Time.time - lastSkillCheckTime > 5f)
         {
             FailSkillCheck();
         }
@@ -157,7 +147,6 @@ public class SecondPlayerFinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObs
         float successStart = successZoneAngle - 35f;
         float successEnd = successZoneAngle + 40f;
 
-        // Handle circular overlap
         if (successStart < 0)
         {
             successStart += 360f;
@@ -229,9 +218,6 @@ public class SecondPlayerFinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObs
 
     }
 
-
-    // Called by the collider when player enters
-    // In SecondPlayerFinalPuzzleHandler.cs - Update the ActivatePuzzle method:
     public void ActivatePuzzle()
     {
         int puzzleType = NetworkManager.Instance.GetLocalPlayerPuzzleType();
@@ -257,7 +243,6 @@ public class SecondPlayerFinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObs
         }
         else
         {
-            // When activated, ensure we start the skill check cycle
             firstTime = true;
             lastSkillCheckTime = Time.time - skillCheckFrequency;
         }
@@ -271,7 +256,6 @@ public class SecondPlayerFinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObs
             isPuzzleActive = false;
             photonView.RPC("SyncPuzzleActivation", RpcTarget.All, false);
 
-            // Hide skill check UI
             if (skillCheck != null)
                 skillCheck.SetActive(false);
             isSkillCheckActive = false;
@@ -280,19 +264,16 @@ public class SecondPlayerFinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObs
     }
 
 
-    // FIX: Added the missing OnPhotonSerializeView method
     public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
     {
         if (stream.IsWriting)
         {
-            // We own this player: send the others our data
             stream.SendNext(isPuzzleActive);
             stream.SendNext(puzzleComplete);
             stream.SendNext(isSkillCheckActive);
         }
         else
         {
-            // Network player, receive data
             this.isPuzzleActive = (bool)stream.ReceiveNext();
             this.puzzleComplete = (bool)stream.ReceiveNext();
             this.isSkillCheckActive = (bool)stream.ReceiveNext();
@@ -303,7 +284,6 @@ public class SecondPlayerFinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObs
     void RequestActivationFromOwner()
     {
         int puzzleType = NetworkManager.Instance.GetLocalPlayerPuzzleType();
-        // If this client is the owner, activate the puzzle
         if (photonView.IsMine && puzzleType == 2)
         {
             ActivatePuzzle();
@@ -338,12 +318,10 @@ public class SecondPlayerFinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObs
         int puzzleType = NetworkManager.Instance.GetLocalPlayerPuzzleType();
         if (PhotonNetwork.LocalPlayer != null && puzzleType == 2 && !puzzleComplete)
         {
-            // Request ownership if we don't have it
             if (!photonView.IsMine)
             {
                 Debug.Log("Player 2 requesting ownership for puzzle");
                 photonView.RequestOwnership();
-                // Small delay to ensure ownership transfer
                 StartCoroutine(DelayedActivation());
             }
             else
@@ -367,7 +345,7 @@ public class SecondPlayerFinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObs
     {
         isPuzzleActive = true;
         firstTime = true;
-        lastSkillCheckTime = Time.time - skillCheckFrequency; // Start immediately
+        lastSkillCheckTime = Time.time - skillCheckFrequency;
 
         Debug.Log($"Player 2 puzzle ACTIVATED - isPuzzleActive: {isPuzzleActive}, firstTime: {firstTime}");
     }
@@ -379,11 +357,9 @@ public class SecondPlayerFinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObs
         isSkillCheckActive = false;
         puzzleComplete = true;
 
-        // Hide skill check UI
         if (skillCheck != null)
             skillCheck.SetActive(false);
 
-        // Clear feedback
         if (playerFeedbackGO != null)
             playerFeedbackGO.SetActive(false);
 

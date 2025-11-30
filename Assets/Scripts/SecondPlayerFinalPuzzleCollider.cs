@@ -13,6 +13,7 @@ public class SecondPlayerFinalPuzzleCollider : MonoBehaviourPunCallbacks
 
     private void Start()
     {
+        ui.SetActive(false);
         if (handler == null)
         {
             handler = FindFirstObjectByType<SecondPlayerFinalPuzzleHandler>();

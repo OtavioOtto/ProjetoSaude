@@ -10,6 +10,7 @@ public class FinalPuzzleCollider : MonoBehaviourPunCallbacks
 
     private void Start()
     {
+        ui.SetActive(false);
         // Ensure we have a reference to the handler
         if (handler == null)
         {

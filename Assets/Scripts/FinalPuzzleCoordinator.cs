@@ -11,8 +11,8 @@ public class FinalPuzzleCoordinator : MonoBehaviourPunCallbacks
     public FinalPuzzleHandler player1Puzzle;
     public SecondPlayerFinalPuzzleHandler player2Puzzle;
 
-    public int player1PuzzleViewID = 1;
-    public int player2PuzzleViewID = 2;
+    public int player1PuzzleViewID = 49;
+    public int player2PuzzleViewID = 19;
 
     [Header("Puzzle States")]
     public bool player1InPosition;
@@ -25,14 +25,12 @@ public class FinalPuzzleCoordinator : MonoBehaviourPunCallbacks
         if (Instance == null)
         {
             Instance = this;
-            DontDestroyOnLoad(gameObject);
 
-            // Ensure we have a PhotonView component
             PhotonView pv = GetComponent<PhotonView>();
             if (pv == null)
             {
                 pv = gameObject.AddComponent<PhotonView>();
-                pv.ViewID = 999; // Use a fixed ViewID for the coordinator
+                pv.ViewID = 999;
                 pv.OwnershipTransfer = OwnershipOption.Takeover;
                 pv.Synchronization = ViewSynchronization.UnreliableOnChange;
             }
@@ -44,7 +42,6 @@ public class FinalPuzzleCoordinator : MonoBehaviourPunCallbacks
     }
     void Update()
     {
-        // Allow manual reset with 0 key (for testing)
         if (Input.GetKeyDown(KeyCode.Alpha0))
         {
             if (PhotonNetwork.IsMasterClient)
@@ -54,7 +51,6 @@ public class FinalPuzzleCoordinator : MonoBehaviourPunCallbacks
             }
             else
             {
-                // Non-master client requests game end from master
                 Debug.Log("Non-master client requesting game end via 0 key");
                 photonView.RPC("RequestGameEnd", RpcTarget.MasterClient);
             }
@@ -62,7 +58,7 @@ public class FinalPuzzleCoordinator : MonoBehaviourPunCallbacks
     }
 
     [PunRPC]
-    void RequestGameEnd()
+    public void RequestGameEnd()
     {
         Debug.Log("Master client received game end request from another player");
         if (PhotonNetwork.IsMasterClient)
@@ -95,17 +91,15 @@ public class FinalPuzzleCoordinator : MonoBehaviourPunCallbacks
         }
     }
 
-    void EndGame()
+    public void EndGame()
     {
         Debug.Log($"EndGame called by player {PhotonNetwork.LocalPlayer.ActorNumber} - Initiating complete game reset");
 
-        // Reset coordinator state immediately
         player1InPosition = false;
         player2InPosition = false;
         bothPuzzlesActive = false;
         puzzlesCompleted = 0;
 
-        // Notify all clients to reset - but don't try to call RPCs on puzzle objects
         if (photonView != null && photonView.IsMine)
         {
             photonView.RPC("ResetAllPlayers", RpcTarget.All);
@@ -114,7 +108,6 @@ public class FinalPuzzleCoordinator : MonoBehaviourPunCallbacks
         else
         {
             Debug.Log("EndGame called but no valid photonView, resetting locally");
-            // Fallback: reset locally
             ResetAllPlayers();
         }
     }
@@ -124,23 +117,17 @@ public class FinalPuzzleCoordinator : MonoBehaviourPunCallbacks
     {
         Debug.Log($"ResetAllPlayers RPC received by player {PhotonNetwork.LocalPlayer?.ActorNumber} - Resetting game completely");
 
-        // Stop trying to call RPCs on puzzle handlers - they're being destroyed anyway
-        // Instead, just proceed with the main reset
-
-        // Reset coordinator state locally
         player1InPosition = false;
         player2InPosition = false;
         bothPuzzlesActive = false;
         puzzlesCompleted = 0;
 
-        // Use the NetworkManager's hard reset coroutine
         if (NetworkManager.Instance != null)
         {
             NetworkManager.Instance.StartCoroutine(NetworkManager.Instance.HardResetCoroutine());
         }
         else
         {
-            // Fallback: Load main menu directly if NetworkManager isn't available
             Debug.LogWarning("NetworkManager instance not found, loading main menu directly");
             SceneManager.LoadScene("MainMenu");
         }
@@ -148,13 +135,11 @@ public class FinalPuzzleCoordinator : MonoBehaviourPunCallbacks
 
     void StopAllPuzzles()
     {
-        // Player 1
         if (player1Puzzle != null && player1Puzzle.photonView != null && player1Puzzle.photonView.ViewID > 0)
         {
             player1Puzzle.photonView.RPC("StopPuzzle", RpcTarget.All);
         }
 
-        // Player 2
         if (player2Puzzle != null && player2Puzzle.photonView != null && player2Puzzle.photonView.ViewID > 0)
         {
             player2Puzzle.photonView.RPC("StopPuzzle", RpcTarget.All);
@@ -168,7 +153,6 @@ public class FinalPuzzleCoordinator : MonoBehaviourPunCallbacks
     {
         Debug.Log("Coordinator: Resetting both puzzles due to skill check failure");
 
-        // Reset by PhotonView ID (most reliable method)
         PhotonView pv1 = PhotonView.Find(player1PuzzleViewID);
         if (pv1 != null)
         {
@@ -204,7 +188,6 @@ public class FinalPuzzleCoordinator : MonoBehaviourPunCallbacks
 
             Debug.Log("Coordinator: Activating both puzzles simultaneously");
 
-            // Use a coroutine to ensure both puzzles activate at the same time
             StartCoroutine(ActivateBothPuzzles());
         }
         else if (shouldDeactivate)
@@ -219,10 +202,8 @@ public class FinalPuzzleCoordinator : MonoBehaviourPunCallbacks
     {
         Debug.Log("Coordinator: Starting simultaneous puzzle activation");
 
-        // Small delay to ensure both players are ready
         yield return new WaitForSeconds(0.3f);
 
-        // Activate Player 2's puzzle first with ownership handling
         if (player2Puzzle != null && player2Puzzle.photonView != null)
         {
 
@@ -231,10 +212,8 @@ public class FinalPuzzleCoordinator : MonoBehaviourPunCallbacks
             Debug.Log("Coordinator: Activated Player 2 puzzle");
         }
 
-        // Small delay to ensure Player 2 puzzle is ready
         yield return new WaitForSeconds(0.2f);
 
-        // Activate Player 1's puzzle
         if (player1Puzzle != null && player1Puzzle.photonView != null)
         {
             player1Puzzle.photonView.RPC("ForceActivatePuzzle", RpcTarget.All);

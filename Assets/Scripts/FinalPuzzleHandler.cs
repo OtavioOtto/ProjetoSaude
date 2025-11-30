@@ -12,7 +12,7 @@ public class FinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObservable
     [Header("Slider Components")]
     public Slider progress;
     public Image fillImage;
-    [Header("First time checker")]
+    [Header("First time check")]
     public bool firstTime;
     [Header("UI")]
     public GameObject ui;
@@ -26,17 +26,15 @@ public class FinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObservable
     private string currentButton;
     private bool waitingForInput;
 
-    // Colors
     Color orange = new Color(249f / 255f, 129f / 255f, 40f / 255f);
     Color yellowGreen = new Color(154f / 255f, 205f / 255f, 50f / 255f);
 
-    // Network synchronization
     private float syncedProgress = 0f;
     private bool syncedComplete = false;
     private bool syncedActive = false;
 
-    // Reference to the collider that activates this puzzle
     private FinalPuzzleCollider activationCollider;
+    private FinalPuzzleCoordinator coordinator;
 
     private void Start()
     {
@@ -45,10 +43,9 @@ public class FinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObservable
         isPuzzleActive = false;
         puzzleComplete = false;
 
-        // Find the activation collider
         activationCollider = FindFirstObjectByType<FinalPuzzleCollider>();
+        coordinator = FindFirstObjectByType<FinalPuzzleCoordinator>();
 
-        // Only enable for players who selected Alex (character1)
         int puzzleType = NetworkManager.Instance.GetLocalPlayerPuzzleType();
         if (puzzleType != 1)
         {
@@ -62,17 +59,13 @@ public class FinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObservable
         int puzzleType = NetworkManager.Instance.GetLocalPlayerPuzzleType();
         if (!photonView.IsMine || puzzleType != 1) return;
 
-        // Handle puzzle completion
         if (puzzleComplete)
             StartCoroutine(HideUI());
 
         UpdateProgressColor();
 
-        // Input handling during active puzzle
         if (isPuzzleActive && waitingForInput)
         {
-            // Input is already handled in the coroutine, but we need to ensure
-            // the puzzle stops if conditions change
             if (!ShouldKeepPuzzleActive())
             {
                 StopPuzzle();
@@ -111,14 +104,12 @@ public class FinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObservable
 
     bool ShouldActivatePuzzle()
     {
-        // Use the coordinator to determine if both players are ready
         return activationCollider != null &&
                activationCollider.playerInside &&
                FinalPuzzleCoordinator.Instance != null &&
                FinalPuzzleCoordinator.Instance.bothPuzzlesActive;
     }
 
-    // Rest of your FinalPuzzleHandler methods remain the same...
     IEnumerator FinalPuzzle()
     {
         int lastNumber = -1;
@@ -131,44 +122,39 @@ public class FinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObservable
             else
                 firstTime = false;
 
-            // Generate new button (ensure it's different from last)
             int buttonIndex;
             do
             {
                 buttonIndex = Random.Range(0, _buttons.Length);
-            } while (buttonIndex == lastNumber && _buttons.Length > 1);
+            } 
+            while (buttonIndex == lastNumber && _buttons.Length > 1);
 
             currentButton = _buttons[buttonIndex];
             lastNumber = buttonIndex;
 
-            // Update UI and reset state
             photonView.RPC("UpdateButtonText", RpcTarget.All, "[" + currentButton + "]");
             timeLeft = 3f;
             waitingForInput = true;
             missed = false;
 
-            // Clear any previous invoke
             CancelInvoke("SubtractOne");
-            InvokeRepeating("SubtractOne", 1f, 1f); // Changed to 1 second intervals
+            InvokeRepeating("SubtractOne", 1f, 1f);
 
             KeyCode targetKeyCode = GetKeyCodeFromString(currentButton);
             bool success = false;
             float inputStartTime = Time.time;
 
-            // Input loop - simplified
+
             while (waitingForInput && timeLeft > 0)
             {
-                // Check for the correct key
                 if (Input.GetKeyDown(targetKeyCode))
                 {
                     success = true;
                     waitingForInput = false;
                     break;
                 }
-                // Check for any wrong key press
                 else if (Input.anyKeyDown)
                 {
-                    // Check if any of the valid buttons were pressed (wrong one)
                     foreach (string button in _buttons)
                     {
                         KeyCode keyCode = GetKeyCodeFromString(button);
@@ -187,7 +173,6 @@ public class FinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObservable
 
             CancelInvoke("SubtractOne");
 
-            // Handle result
             if (success)
             {
                 syncedProgress += 0.1f;
@@ -214,7 +199,6 @@ public class FinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObservable
                 photonView.RPC("ShowFeedback", RpcTarget.All, feedback);
             }
 
-            // Clear the button display and wait before next round
             yield return new WaitForSeconds(.5f);
         }
 
@@ -226,7 +210,6 @@ public class FinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObservable
             puzzleComplete = true;
             photonView.RPC("CompletePuzzle", RpcTarget.All);
 
-            // Notify coordinator
             if (FinalPuzzleCoordinator.Instance != null)
             {
                 FinalPuzzleCoordinator.Instance.photonView.RPC("ReportPuzzleComplete", RpcTarget.All, 1);
@@ -282,8 +265,16 @@ public class FinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObservable
             puzzleCoroutine = null;
         }
 
-        if (feedbackTxt != null)
-            feedbackTxt.SetText("Completou!");
+        if (PhotonNetwork.IsMasterClient)
+        {
+            Debug.Log("Master client forcing game end via final puzzle");
+            coordinator.EndGame();
+        }
+        else
+        {
+            Debug.Log("Non-master client requesting game end via final puzzle");
+            photonView.RPC("RequestGameEnd", RpcTarget.MasterClient);
+        }
     }
 
     void SubtractOne()
@@ -371,15 +362,14 @@ public class FinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObservable
         progress.value = 0f;
         puzzleComplete = false;
         isPuzzleActive = false;
+        photonView.RPC("UpdateProgress", RpcTarget.All, 0f);
 
-        // Stop any running puzzle
         if (puzzleCoroutine != null)
         {
             StopCoroutine(puzzleCoroutine);
             puzzleCoroutine = null;
         }
 
-        // Update UI
         UpdateProgressColor();
         feedbackTxt.SetText("");
         buttonTxt.SetText("");
