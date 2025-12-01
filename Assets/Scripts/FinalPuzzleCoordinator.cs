@@ -11,8 +11,8 @@ public class FinalPuzzleCoordinator : MonoBehaviourPunCallbacks
     public FinalPuzzleHandler player1Puzzle;
     public SecondPlayerFinalPuzzleHandler player2Puzzle;
 
-    public int player1PuzzleViewID = 49;
-    public int player2PuzzleViewID = 19;
+    public int player1PuzzleViewID;
+    public int player2PuzzleViewID;
 
     [Header("Puzzle States")]
     public bool player1InPosition;
@@ -22,6 +22,16 @@ public class FinalPuzzleCoordinator : MonoBehaviourPunCallbacks
 
     private void Awake()
     {
+
+        FinalPuzzleHandler p1 = FindFirstObjectByType<FinalPuzzleHandler>();
+        SecondPlayerFinalPuzzleHandler p2 = FindFirstObjectByType<SecondPlayerFinalPuzzleHandler>();
+
+        if (p1 != null && p1.photonView != null)
+            player1PuzzleViewID = p1.photonView.ViewID;
+
+        if (p2 != null && p2.photonView != null)
+            player2PuzzleViewID = p2.photonView.ViewID;
+
         if (Instance == null)
         {
             Instance = this;
@@ -151,29 +161,73 @@ public class FinalPuzzleCoordinator : MonoBehaviourPunCallbacks
     [PunRPC]
     public void ReportSkillCheckFailure()
     {
+        Debug.Log($"[Coordinator] ReportSkillCheckFailure received by player {PhotonNetwork.LocalPlayer.ActorNumber} (IsMaster: {PhotonNetwork.IsMasterClient})");
+
+        if (!PhotonNetwork.IsMasterClient)
+        {
+            Debug.LogWarning("[Coordinator] ReportSkillCheckFailure was received by non-master client. Ignoring.");
+            return;
+        }
+
         Debug.Log("Coordinator: Resetting both puzzles due to skill check failure");
 
-        PhotonView pv1 = PhotonView.Find(player1PuzzleViewID);
-        if (pv1 != null)
+        // First, stop both puzzles
+        StopAllPuzzles();
+
+        // Reset the completion counter
+        puzzlesCompleted = 0;
+
+        // Reset Player 1 puzzle
+        if (player1Puzzle != null)
         {
-            pv1.RPC("ResetPuzzleProgress", RpcTarget.All);
-            Debug.Log("Reset Player 1 puzzle via ViewID");
-        }
-        else
-        {
-            Debug.LogWarning($"Player 1 puzzle with ViewID {player1PuzzleViewID} not found");
+            Debug.Log("[Coordinator] Directly resetting Player uzzle");
+            player1Puzzle.ResetPuzzleProgress();
         }
 
-        PhotonView pv2 = PhotonView.Find(player2PuzzleViewID);
-        if (pv2 != null)
+        // Reset Player 2 puzzle
+        if (player2Puzzle != null)
         {
-            pv2.RPC("ResetPuzzle", RpcTarget.All);
-            Debug.Log("Reset Player 2 puzzle via ViewID");
+            Debug.Log("[Coordinator] Directly resetting Player 2 puzzle");
+            player2Puzzle.ResetPuzzle();
+        }
+
+        // Also send RPCs for other clients
+        photonView.RPC("ResetAllPuzzles", RpcTarget.Others);
+
+        // CRITICAL: Reactivate both puzzles after reset
+        // Set bothPuzzlesActive to false to allow reactivation
+        bothPuzzlesActive = false;
+
+        // Small delay to ensure reset is complete, then reactivate
+        ReactivateAfterReset();
+    }
+
+    private void ReactivateAfterReset()
+    {
+
+        // Check if both players are still in position
+        if (player1InPosition && player2InPosition)
+        {
+            Debug.Log("Coordinator: Reactivating puzzles after reset");
+            bothPuzzlesActive = true;
+            StartCoroutine(ActivateBothPuzzles());
         }
         else
         {
-            Debug.LogWarning($"Player 2 puzzle with ViewID {player2PuzzleViewID} not found");
+            Debug.Log("Coordinator: Players not in position, not reactivating");
         }
+    }
+
+    [PunRPC]
+    private void ResetAllPuzzles()
+    {
+        // Reset local puzzle states
+        puzzlesCompleted = 0;
+
+        if (player1Puzzle != null)
+            player1Puzzle.ResetPuzzleProgress();
+        if (player2Puzzle != null)
+            player2Puzzle.ResetPuzzle();
     }
 
     private void CheckPuzzleActivation()

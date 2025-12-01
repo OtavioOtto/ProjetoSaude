@@ -7,10 +7,12 @@ using Photon.Pun;
 public class MainMenuController : MonoBehaviour
 {
     [SerializeField] private Button startButton;
+    [SerializeField] private Button controlsButton;
     [SerializeField] private TMP_Text connectionStatusText;
     [SerializeField] private TMP_Text errorText;
     [SerializeField] private GameObject loadingIndicator;
     [SerializeField] private GameObject errorPanel;
+    [SerializeField] private GameObject controlsCanvas;
 
     private float lastConnectionCheckTime;
 
@@ -23,6 +25,7 @@ public class MainMenuController : MonoBehaviour
             return;
         }
         startButton.onClick.AddListener(StartGame);
+        controlsButton.onClick.AddListener(ShowControls);
 
         // Auto-attempt connection/reconnection when returning to main menu
         if (!PhotonNetwork.IsConnected)
@@ -56,6 +59,9 @@ public class MainMenuController : MonoBehaviour
             UpdateConnectionStatus();
             lastConnectionCheckTime = Time.time;
         }
+
+        if (controlsCanvas.activeSelf && Input.GetKeyDown(KeyCode.Escape))
+            controlsCanvas.SetActive(false);
     }
 
     void UpdateConnectionStatus()
@@ -130,6 +136,8 @@ public class MainMenuController : MonoBehaviour
             NetworkManager.Instance.SetWantsToJoinRoom(true);
         }
     }
+
+    public void ShowControls() {controlsCanvas.SetActive(true);}
 
     public void OnJoinRoomFailed(string message)
     {

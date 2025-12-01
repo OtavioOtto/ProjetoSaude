@@ -41,5 +41,17 @@ TagManager:
   - name: Default
     uniqueID: 0
     locked: 0
+  - name: walls
+    uniqueID: 3444101965
+    locked: 0
+  - name: objects
+    uniqueID: 1066951661
+    locked: 0
+  - name: players
+    uniqueID: 3073397007
+    locked: 0
+  - name: puzzles
+    uniqueID: 936310681
+    locked: 0
   m_RenderingLayers:
   - Default

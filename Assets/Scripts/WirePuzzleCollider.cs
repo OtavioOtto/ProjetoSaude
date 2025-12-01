@@ -33,7 +33,7 @@ public class WirePuzzleCollider : MonoBehaviour
             puzzle.transform.position = new Vector3(player.transform.position.x, player.transform.position.y, puzzle.transform.position.z);
             playerInside = true;
         }
-        else if (collision.CompareTag("Player") && collision.GetComponent<PhotonView>().IsMine && puzzleType == 2)
+        else if (collision.CompareTag("Player") && collision.GetComponent<PhotonView>().IsMine && puzzleType != 1)
             warningTxt.SetActive(true);
     }
 

@@ -273,7 +273,7 @@ public class FinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObservable
         else
         {
             Debug.Log("Non-master client requesting game end via final puzzle");
-            photonView.RPC("RequestGameEnd", RpcTarget.MasterClient);
+            FinalPuzzleCoordinator.Instance.photonView.RPC("RequestGameEnd", RpcTarget.MasterClient);
         }
     }
 
@@ -356,14 +356,13 @@ public class FinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObservable
     [PunRPC]
     public void ResetPuzzleProgress()
     {
-        if (!photonView.IsMine) return;
-
         syncedProgress = 0f;
         progress.value = 0f;
         puzzleComplete = false;
         isPuzzleActive = false;
-        photonView.RPC("UpdateProgress", RpcTarget.All, 0f);
+        waitingForInput = false;
 
+        // Clear any active coroutines
         if (puzzleCoroutine != null)
         {
             StopCoroutine(puzzleCoroutine);
@@ -371,8 +370,12 @@ public class FinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObservable
         }
 
         UpdateProgressColor();
-        feedbackTxt.SetText("");
-        buttonTxt.SetText("");
+        if (feedbackTxt != null)
+            feedbackTxt.SetText("");
+        if (buttonTxt != null)
+            buttonTxt.SetText("");
+
+        Debug.Log("Player 1 puzzle reset complete - ready for reactivation");
     }
 
     [PunRPC]

@@ -81,6 +81,7 @@
     <Compile Include="Assets\Scripts\PlayerManager.cs" />
     <Compile Include="Assets\Scripts\FinalPuzzleCollider.cs" />
     <Compile Include="Assets\Photon\PhotonChat\Demos\DemoChat\ChatGui.cs" />
+    <Compile Include="Assets\Scripts\MapPuzzleHandler.cs" />
     <Compile Include="Assets\Scripts\DialogManager.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\VertexJitter.cs" />
     <Compile Include="Assets\Scripts\PoweredWireBehaviour.cs" />

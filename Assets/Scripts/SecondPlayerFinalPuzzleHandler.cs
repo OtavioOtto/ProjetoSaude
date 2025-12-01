@@ -172,13 +172,19 @@ public class SecondPlayerFinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObs
 
     void FailSkillCheck()
     {
-        Debug.Log("Skill check FAILED!");
+        Debug.Log($"[P2] FailSkillCheck called by player {PhotonNetwork.LocalPlayer.ActorNumber}");
+
         photonView.RPC("ShowSkillCheckResult", RpcTarget.All, "Falhou!");
         EndSkillCheck();
 
         if (FinalPuzzleCoordinator.Instance != null)
         {
-            FinalPuzzleCoordinator.Instance.photonView.RPC("ReportSkillCheckFailure", RpcTarget.All);
+            Debug.Log($"[P2] Sending ReportSkillCheckFailure to MasterClient");
+            FinalPuzzleCoordinator.Instance.photonView.RPC("ReportSkillCheckFailure", RpcTarget.MasterClient);
+        }
+        else
+        {
+            Debug.LogError("[P2] FinalPuzzleCoordinator.Instance is null!");
         }
     }
 
@@ -299,15 +305,16 @@ public class SecondPlayerFinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObs
     [PunRPC]
     public void ResetPuzzle()
     {
-        if (photonView.IsMine)
-        {
-            isSkillCheckActive = false;
-            firstTime = true;
-            lastSkillCheckTime = Time.time;
+        isPuzzleActive = false; // Ensure it's not active
+        isSkillCheckActive = false;
+        puzzleComplete = false;
+        firstTime = true;
+        lastSkillCheckTime = Time.time;
 
-            if (skillCheck != null)
-                skillCheck.SetActive(false);
-        }
+        if (skillCheck != null)
+            skillCheck.SetActive(false);
+
+        Debug.Log("Player 2 puzzle reset complete - ready for reactivation");
     }
 
     [PunRPC]
