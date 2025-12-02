@@ -1,5 +1,6 @@
-using UnityEngine;
 using Photon.Pun;
+using System.Linq;
+using UnityEngine;
 
 public class PlayerBehaviours : MonoBehaviourPunCallbacks, IPunObservable
 {
@@ -13,10 +14,11 @@ public class PlayerBehaviours : MonoBehaviourPunCallbacks, IPunObservable
     private Vector2 lastMoveDirection;
     private bool facingRight = true;
 
-    [Header("Puzzle References")]
+    [Header("Other Objects References")]
     [SerializeField] private FinalPuzzleHandler finalPuzzle;
     [SerializeField] private SecondPlayerFinalPuzzleHandler secondPlayerFinalPuzzle;
     [SerializeField] private WiresHandler wirePuzzle;
+    [SerializeField] private GameObject uiDialog;
 
     // Network synced variables
     private Vector2 networkInput;
@@ -33,10 +35,13 @@ public class PlayerBehaviours : MonoBehaviourPunCallbacks, IPunObservable
         if (!photonView.IsMine)
         {
             rb.bodyType = RigidbodyType2D.Kinematic;// Disable physics for remote players
-        }
+        }   
+            
     }
     void Start()
     {
+        if (uiDialog == null)
+            uiDialog = Resources.FindObjectsOfTypeAll<GameObject>().FirstOrDefault(g => g.name == "DialogCanvas");
         myPuzzleActive = false;
         anim = GetComponent<Animator>();
         networkScale = transform.localScale;
@@ -126,7 +131,7 @@ public class PlayerBehaviours : MonoBehaviourPunCallbacks, IPunObservable
             Debug.Log($"Puzzle active state changed: {myPuzzleActive}, Wire: {wirePuzzleActive}, Block Movement: {shouldBlockMovement}");
         }
 
-        if (!shouldBlockMovement)
+        if (!shouldBlockMovement && !uiDialog.activeSelf)
         {
             float moveX = Input.GetAxisRaw("Horizontal");
             float moveY = Input.GetAxisRaw("Vertical");

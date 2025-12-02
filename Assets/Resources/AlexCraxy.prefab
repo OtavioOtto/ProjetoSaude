@@ -141,6 +141,7 @@ MonoBehaviour:
   finalPuzzle: {fileID: 0}
   secondPlayerFinalPuzzle: {fileID: 0}
   wirePuzzle: {fileID: 0}
+  uiDialog: {fileID: 0}
   myPuzzleActive: 0
   wirePuzzleActive: 0
 --- !u!95 &7696766848757680541

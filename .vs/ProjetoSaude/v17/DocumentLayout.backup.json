@@ -3,28 +3,36 @@
   "WorkspaceRootPath": "D:\\ProjetoSaude\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{49C407DC-CFD6-6BC3-BD8E-82346B1F8D54}|Assembly-CSharp.csproj|d:\\projetosaude\\assets\\scripts\\wirepuzzlecollider.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{49C407DC-CFD6-6BC3-BD8E-82346B1F8D54}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\wirepuzzlecollider.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{49C407DC-CFD6-6BC3-BD8E-82346B1F8D54}|Assembly-CSharp.csproj|D:\\ProjetoSaude\\assets\\scripts\\finalpuzzlecoordinator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{49C407DC-CFD6-6BC3-BD8E-82346B1F8D54}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\finalpuzzlecoordinator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{49C407DC-CFD6-6BC3-BD8E-82346B1F8D54}|Assembly-CSharp.csproj|D:\\ProjetoSaude\\assets\\scripts\\finalpuzzlehandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{49C407DC-CFD6-6BC3-BD8E-82346B1F8D54}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\finalpuzzlehandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{49C407DC-CFD6-6BC3-BD8E-82346B1F8D54}|Assembly-CSharp.csproj|D:\\ProjetoSaude\\assets\\scripts\\secondplayerfinalpuzzlehandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{49C407DC-CFD6-6BC3-BD8E-82346B1F8D54}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\secondplayerfinalpuzzlehandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{49C407DC-CFD6-6BC3-BD8E-82346B1F8D54}|Assembly-CSharp.csproj|D:\\ProjetoSaude\\assets\\scripts\\mappuzzlehandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{49C407DC-CFD6-6BC3-BD8E-82346B1F8D54}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\mappuzzlehandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{49C407DC-CFD6-6BC3-BD8E-82346B1F8D54}|Assembly-CSharp.csproj|D:\\ProjetoSaude\\assets\\scripts\\playerbehaviours.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{49C407DC-CFD6-6BC3-BD8E-82346B1F8D54}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\playerbehaviours.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{49C407DC-CFD6-6BC3-BD8E-82346B1F8D54}|Assembly-CSharp.csproj|D:\\ProjetoSaude\\assets\\scripts\\characterselectioncontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{49C407DC-CFD6-6BC3-BD8E-82346B1F8D54}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\characterselectioncontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{49C407DC-CFD6-6BC3-BD8E-82346B1F8D54}|Assembly-CSharp.csproj|d:\\projetosaude\\assets\\scripts\\mappuzzlehandler1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{49C407DC-CFD6-6BC3-BD8E-82346B1F8D54}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\mappuzzlehandler1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{49C407DC-CFD6-6BC3-BD8E-82346B1F8D54}|Assembly-CSharp.csproj|D:\\ProjetoSaude\\assets\\scripts\\wiredialogshandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{49C407DC-CFD6-6BC3-BD8E-82346B1F8D54}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\wiredialogshandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{49C407DC-CFD6-6BC3-BD8E-82346B1F8D54}|Assembly-CSharp.csproj|D:\\ProjetoSaude\\assets\\scripts\\finalpuzzlehandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{49C407DC-CFD6-6BC3-BD8E-82346B1F8D54}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\finalpuzzlehandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{49C407DC-CFD6-6BC3-BD8E-82346B1F8D54}|Assembly-CSharp.csproj|D:\\ProjetoSaude\\assets\\scripts\\finalroomcollider.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{49C407DC-CFD6-6BC3-BD8E-82346B1F8D54}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\finalroomcollider.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{49C407DC-CFD6-6BC3-BD8E-82346B1F8D54}|Assembly-CSharp.csproj|D:\\ProjetoSaude\\assets\\scripts\\finalpuzzlecoordinator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{49C407DC-CFD6-6BC3-BD8E-82346B1F8D54}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\finalpuzzlecoordinator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{49C407DC-CFD6-6BC3-BD8E-82346B1F8D54}|Assembly-CSharp.csproj|D:\\ProjetoSaude\\assets\\scripts\\secondplayerfinalpuzzlehandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{49C407DC-CFD6-6BC3-BD8E-82346B1F8D54}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\secondplayerfinalpuzzlehandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -34,60 +42,85 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 0,
+          "SelectedChildIndex": 1,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "WirePuzzleCollider.cs",
-              "DocumentMoniker": "D:\\ProjetoSaude\\Assets\\Scripts\\WirePuzzleCollider.cs",
-              "RelativeDocumentMoniker": "Assets\\Scripts\\WirePuzzleCollider.cs",
-              "ToolTip": "D:\\ProjetoSaude\\Assets\\Scripts\\WirePuzzleCollider.cs",
-              "RelativeToolTip": "Assets\\Scripts\\WirePuzzleCollider.cs",
-              "ViewState": "AgIAABAAAAAAAAAAAAAgwCMAAABuAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-30T23:43:50.098Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 1,
               "Title": "PlayerBehaviours.cs",
               "DocumentMoniker": "D:\\ProjetoSaude\\Assets\\Scripts\\PlayerBehaviours.cs",
               "RelativeDocumentMoniker": "Assets\\Scripts\\PlayerBehaviours.cs",
               "ToolTip": "D:\\ProjetoSaude\\Assets\\Scripts\\PlayerBehaviours.cs",
               "RelativeToolTip": "Assets\\Scripts\\PlayerBehaviours.cs",
-              "ViewState": "AgIAAG4AAAAAAAAAAAAgwIIAAAA5AAAAAAAAAA==",
+              "ViewState": "AgIAAIcAAAAAAAAAAAAIwJgAAAAXAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-30T22:42:01.331Z"
+              "WhenOpened": "2025-12-01T22:41:23.105Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "MapPuzzleHandler.cs",
+              "DocumentMoniker": "D:\\ProjetoSaude\\Assets\\Scripts\\MapPuzzleHandler.cs",
+              "RelativeDocumentMoniker": "Assets\\Scripts\\MapPuzzleHandler.cs",
+              "ToolTip": "D:\\ProjetoSaude\\Assets\\Scripts\\MapPuzzleHandler.cs",
+              "RelativeToolTip": "Assets\\Scripts\\MapPuzzleHandler.cs",
+              "ViewState": "AgIAAAIAAAAAAAAAAAAxwBEAAAAnAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-01T04:10:16.034Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 5,
-              "Title": "CharacterSelectionController.cs",
-              "DocumentMoniker": "D:\\ProjetoSaude\\Assets\\Scripts\\CharacterSelectionController.cs",
-              "RelativeDocumentMoniker": "Assets\\Scripts\\CharacterSelectionController.cs",
-              "ToolTip": "D:\\ProjetoSaude\\Assets\\Scripts\\CharacterSelectionController.cs",
-              "RelativeToolTip": "Assets\\Scripts\\CharacterSelectionController.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAqwDAAAAAfAAAAAAAAAA==",
+              "Title": "FinalRoomCollider.cs",
+              "DocumentMoniker": "D:\\ProjetoSaude\\Assets\\Scripts\\FinalRoomCollider.cs",
+              "RelativeDocumentMoniker": "Assets\\Scripts\\FinalRoomCollider.cs",
+              "ToolTip": "D:\\ProjetoSaude\\Assets\\Scripts\\FinalRoomCollider.cs",
+              "RelativeToolTip": "Assets\\Scripts\\FinalRoomCollider.cs",
+              "ViewState": "AgIAAAUAAAAAAAAAAAAQwCEAAABDAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-18T21:12:11.664Z"
+              "WhenOpened": "2025-12-01T22:34:33.001Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 4,
+              "Title": "FinalPuzzleHandler.cs",
+              "DocumentMoniker": "D:\\ProjetoSaude\\Assets\\Scripts\\FinalPuzzleHandler.cs",
+              "RelativeDocumentMoniker": "Assets\\Scripts\\FinalPuzzleHandler.cs",
+              "ToolTip": "D:\\ProjetoSaude\\Assets\\Scripts\\FinalPuzzleHandler.cs",
+              "RelativeToolTip": "Assets\\Scripts\\FinalPuzzleHandler.cs",
+              "ViewState": "AgIAAB0AAAAAAAAAAAAQwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-01T22:20:45.847Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
               "Title": "FinalPuzzleCoordinator.cs",
               "DocumentMoniker": "D:\\ProjetoSaude\\Assets\\Scripts\\FinalPuzzleCoordinator.cs",
               "RelativeDocumentMoniker": "Assets\\Scripts\\FinalPuzzleCoordinator.cs",
               "ToolTip": "D:\\ProjetoSaude\\Assets\\Scripts\\FinalPuzzleCoordinator.cs",
               "RelativeToolTip": "Assets\\Scripts\\FinalPuzzleCoordinator.cs",
-              "ViewState": "AgIAAMMAAAAAAAAAAAAgwMkAAAAfAAAAAAAAAA==",
+              "ViewState": "AgIAAOYAAAAAAAAAAAAswMkAAAAfAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-11-18T20:05:57.979Z"
             },
             {
               "$type": "Document",
               "DocumentIndex": 3,
+              "Title": "WireDialogsHandler.cs",
+              "DocumentMoniker": "D:\\ProjetoSaude\\Assets\\Scripts\\WireDialogsHandler.cs",
+              "RelativeDocumentMoniker": "Assets\\Scripts\\WireDialogsHandler.cs",
+              "ToolTip": "D:\\ProjetoSaude\\Assets\\Scripts\\WireDialogsHandler.cs",
+              "RelativeToolTip": "Assets\\Scripts\\WireDialogsHandler.cs",
+              "ViewState": "AgIAAAUAAAAAAAAAAAAQwBQAAAAsAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-02T00:12:05.749Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
               "Title": "SecondPlayerFinalPuzzleHandler.cs",
               "DocumentMoniker": "D:\\ProjetoSaude\\Assets\\Scripts\\SecondPlayerFinalPuzzleHandler.cs",
               "RelativeDocumentMoniker": "Assets\\Scripts\\SecondPlayerFinalPuzzleHandler.cs",
@@ -100,14 +133,15 @@
             {
               "$type": "Document",
               "DocumentIndex": 2,
-              "Title": "FinalPuzzleHandler.cs",
-              "DocumentMoniker": "D:\\ProjetoSaude\\Assets\\Scripts\\FinalPuzzleHandler.cs",
-              "RelativeDocumentMoniker": "Assets\\Scripts\\FinalPuzzleHandler.cs",
-              "ToolTip": "D:\\ProjetoSaude\\Assets\\Scripts\\FinalPuzzleHandler.cs",
-              "RelativeToolTip": "Assets\\Scripts\\FinalPuzzleHandler.cs",
-              "ViewState": "AgIAAGkBAAAAAAAAAAAqwGkBAAAfAAAAAAAAAA==",
+              "Title": "MapPuzzleHandler1.cs",
+              "DocumentMoniker": "D:\\ProjetoSaude\\Assets\\Scripts\\MapPuzzleHandler1.cs",
+              "RelativeDocumentMoniker": "Assets\\Scripts\\MapPuzzleHandler1.cs",
+              "ToolTip": "D:\\ProjetoSaude\\Assets\\Scripts\\MapPuzzleHandler1.cs",
+              "RelativeToolTip": "Assets\\Scripts\\MapPuzzleHandler1.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-18T20:04:10.72Z"
+              "WhenOpened": "2025-12-02T02:18:32.28Z",
+              "EditorCaption": ""
             }
           ]
         }
