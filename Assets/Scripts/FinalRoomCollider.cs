@@ -7,10 +7,10 @@ public class FinalRoomCollider : MonoBehaviourPunCallbacks
     [SerializeField] private DialogManager.Dialog[] finalRoomDialog;
 
     [Header("Trigger Settings")]
-    [SerializeField] private bool triggerOnce = true;
+    public bool triggerOnce = true;
+    public bool hasTriggeredGlobally = false;
 
     private DialogManager dialogManager;
-    private bool hasTriggeredGlobally = false;
 
     void Start()
     {
@@ -47,7 +47,6 @@ public class FinalRoomCollider : MonoBehaviourPunCallbacks
         }
     }
 
-    // Method to reset the trigger (useful for testing)
     public void ResetTrigger()
     {
         hasTriggeredGlobally = false;

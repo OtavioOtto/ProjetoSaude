@@ -20,6 +20,9 @@ public class WirePuzzleCollider : MonoBehaviour
             enabled = false;
             return;
         }
+
+        Collider2D col = gameObject.GetComponent<Collider2D>();
+        col.enabled = false;
     }
 
     private void OnTriggerEnter2D(Collider2D collision)

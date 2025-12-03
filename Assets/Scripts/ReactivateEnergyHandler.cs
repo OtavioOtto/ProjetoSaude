@@ -1,5 +1,6 @@
 using Photon.Pun;
 using UnityEngine;
+using UnityEngine.Rendering.Universal;
 
 public class ReactivateEnergyHandler : MonoBehaviourPunCallbacks
 {
@@ -9,10 +10,19 @@ public class ReactivateEnergyHandler : MonoBehaviourPunCallbacks
     private Vector2 input;
     public PhotonView photonView;
 
+    private GameObject generatorOne;
+    private GameObject generatorTwo;
+    private GameObject wires;
+    private Light2D lightGlobal;
     void Start()
     {
         photonView = GetComponent<PhotonView>();
 
+        generatorOne = GameObject.Find("ReactivateEnergyPuzzle");
+        generatorTwo = GameObject.Find("SecondPlayerFinalPuzzleCollider");
+        wires = GameObject.Find("WirePuzzleCollider");
+        generatorTwo.SetActive(false);
+        lightGlobal = GameObject.Find("Global Light 2D").GetComponent<Light2D>();
         // Apenas Morfeus executa
         int puzzleType = NetworkManager.Instance.GetLocalPlayerPuzzleType();
         if (puzzleType != 1)
@@ -20,6 +30,9 @@ public class ReactivateEnergyHandler : MonoBehaviourPunCallbacks
             enabled = false;
             return;
         }
+
+        
+
     }
 
     void Update()
@@ -55,6 +68,10 @@ public class ReactivateEnergyHandler : MonoBehaviourPunCallbacks
     [PunRPC]
     private void EndPuzzle() 
     {
+        lightGlobal.intensity = 1f;
+        generatorOne.SetActive(false);
+        generatorTwo.SetActive(true);
+        wires.GetComponent<Collider2D>().enabled = true;
         puzzleActive = false;
         puzzleComplete = true;
         GameObject puzzle = GameObject.Find("ReactivateEnergyCover");

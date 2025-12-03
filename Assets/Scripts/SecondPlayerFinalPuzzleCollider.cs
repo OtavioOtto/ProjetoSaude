@@ -24,7 +24,6 @@ public class SecondPlayerFinalPuzzleCollider : MonoBehaviourPunCallbacks
         {
             enabled = false;
         }
-        gameObject.SetActive(false);
     }
     private void OnTriggerEnter2D(Collider2D collision)
     {

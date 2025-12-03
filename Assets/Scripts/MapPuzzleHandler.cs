@@ -1,5 +1,6 @@
 using Photon.Pun;
 using UnityEngine;
+using UnityEngine.Rendering.Universal;
 
 public class MapPuzzleHandler : MonoBehaviourPunCallbacks
 {
@@ -11,6 +12,12 @@ public class MapPuzzleHandler : MonoBehaviourPunCallbacks
     public GameObject puzzle;
 
     public PhotonView photonView;
+
+    [Header("Object References")]
+    [SerializeField] private GameObject generatorOne;
+    [SerializeField] private GameObject generatorTwo;
+    [SerializeField] private GameObject wires;
+    [SerializeField] private Light2D lightGlobal;
 
     void Start()
     {
@@ -59,6 +66,10 @@ public class MapPuzzleHandler : MonoBehaviourPunCallbacks
         puzzleComplete = complete;
         if (complete)
         {
+            lightGlobal.intensity = 1f;
+            generatorOne.SetActive(false);
+            generatorTwo.SetActive(true);
+            wires.GetComponent<Collider2D>().enabled = true;
             puzzle.SetActive(false);
             colliderPuzzle.GetComponent<Collider2D>().enabled = false;
         }
