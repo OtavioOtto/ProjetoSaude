@@ -1,5 +1,4 @@
 using Photon.Pun;
-using Unity.XR.OpenVR;
 using UnityEngine;
 
 public class WirePuzzleCollider : MonoBehaviour

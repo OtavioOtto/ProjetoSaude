@@ -66,6 +66,29 @@ MonoBehaviour:
   - OnGameReset
   - RequestGameEnd
   - ResetAllPuzzles
+  - OnTriggerEnter2D
+  - SyncMovement
+  - SyncPuzzleComplete
+  - RPC_ReceiveMovementInput
+  - RPC_SyncPosition
+  - SetRemoteInput
+  - RPC_MovePlayer
+  - RPC_SetControlledPlayer
+  - RPC_StartPuzzle
+  - RPC_PuzzleCompleted
+  - RPC_ReceiveMovement
+  - RPC_ActivatePuzzle
+  - RPC_ReceiveControlInput
+  - RPC_SendControlInput
+  - RPC_UpdatePlayerPosition
+  - SendMovementToOtherPlayer
+  - SetPuzzleComplete
+  - SyncMapPosition
+  - SendMovementToMap
+  - ActivateBothHandlers
+  - AlexCraxyActivated
+  - MorfeusActivated
+  - EndPuzzle
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 0

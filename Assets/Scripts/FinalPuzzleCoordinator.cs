@@ -50,6 +50,11 @@ public class FinalPuzzleCoordinator : MonoBehaviourPunCallbacks
             Destroy(gameObject);
         }
     }
+
+    private void Start()
+    {
+        player2Puzzle.gameObject.SetActive(false);
+    }
     void Update()
     {
         if (Input.GetKeyDown(KeyCode.Alpha0))

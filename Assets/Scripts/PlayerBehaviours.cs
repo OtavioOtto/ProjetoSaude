@@ -18,6 +18,8 @@ public class PlayerBehaviours : MonoBehaviourPunCallbacks, IPunObservable
     [SerializeField] private FinalPuzzleHandler finalPuzzle;
     [SerializeField] private SecondPlayerFinalPuzzleHandler secondPlayerFinalPuzzle;
     [SerializeField] private WiresHandler wirePuzzle;
+    [SerializeField] private MapPuzzleHandler mapPuzzle;
+    [SerializeField] private ReactivateEnergyHandler energyPuzzle;
     [SerializeField] private GameObject uiDialog;
 
     // Network synced variables
@@ -28,6 +30,8 @@ public class PlayerBehaviours : MonoBehaviourPunCallbacks, IPunObservable
 
     public bool myPuzzleActive;
     public bool wirePuzzleActive;
+    public bool mapPuzzleActive;
+    public bool energyPuzzleActive;
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -98,8 +102,14 @@ public class PlayerBehaviours : MonoBehaviourPunCallbacks, IPunObservable
         if (puzzleType == 1 && wirePuzzle == null)
             wirePuzzle = FindFirstObjectByType<WiresHandler>();
 
+        if (puzzleType == 1 && energyPuzzle == null)
+            energyPuzzle = FindFirstObjectByType<ReactivateEnergyHandler>();
+
         if (puzzleType == 2 && secondPlayerFinalPuzzle == null)
             secondPlayerFinalPuzzle = FindFirstObjectByType<SecondPlayerFinalPuzzleHandler>();
+
+        if (puzzleType == 2 && mapPuzzle == null)
+            mapPuzzle = FindFirstObjectByType<MapPuzzleHandler>();
 
         // Check puzzle state with null checks - MORE ROBUST CHECK
         bool wasPuzzleActive = myPuzzleActive;
@@ -107,6 +117,8 @@ public class PlayerBehaviours : MonoBehaviourPunCallbacks, IPunObservable
         // Check if ANY puzzle is active (including skill check)
         bool isAnyPuzzleActive = false;
         bool isWirePuzzleActive = false;
+        bool isMapPuzzleActive = false;
+        bool isEnergyPuzzleActive = false;
 
         if (puzzleType == 1 && finalPuzzle != null)
         {
@@ -121,10 +133,17 @@ public class PlayerBehaviours : MonoBehaviourPunCallbacks, IPunObservable
         if (puzzleType == 1 && wirePuzzle != null)
             isWirePuzzleActive = wirePuzzle.isPuzzleActive;
 
+        if (puzzleType == 2 && mapPuzzle != null)
+            isMapPuzzleActive = mapPuzzle.puzzleActive;
+
+        if(puzzleType == 1 && energyPuzzle != null)
+            isEnergyPuzzleActive = energyPuzzle.puzzleActive;
+
         myPuzzleActive = isAnyPuzzleActive;
         wirePuzzleActive = isWirePuzzleActive;
-
-        bool shouldBlockMovement = myPuzzleActive || wirePuzzleActive;
+        mapPuzzleActive = isMapPuzzleActive;
+        energyPuzzleActive = isEnergyPuzzleActive;
+        bool shouldBlockMovement = myPuzzleActive || wirePuzzleActive || mapPuzzleActive || energyPuzzleActive;
 
         if (wasPuzzleActive != myPuzzleActive)
         {

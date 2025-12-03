@@ -19,15 +19,13 @@ public class SecondPlayerFinalPuzzleCollider : MonoBehaviourPunCallbacks
             handler = FindFirstObjectByType<SecondPlayerFinalPuzzleHandler>();
         }
 
-        // Only enable for players who selected Morfeus (character2)
         int puzzleType = NetworkManager.Instance.GetLocalPlayerPuzzleType();
-        if (puzzleType != 2) // Not Morfeus
+        if (puzzleType != 2)
         {
             enabled = false;
         }
         gameObject.SetActive(false);
     }
-
     private void OnTriggerEnter2D(Collider2D collision)
     {
         
@@ -74,45 +72,6 @@ public class SecondPlayerFinalPuzzleCollider : MonoBehaviourPunCallbacks
         }
     }
 
-    private IEnumerator OwnershipAndActivationProcess()
-    {
-        if (ownershipRequestInProgress) yield break;
-
-        ownershipRequestInProgress = true;
-
-        // If we already own it, just wait for coordinator to activate
-        if (handler.photonView.IsMine)
-        {
-            ownershipRequestInProgress = false;
-            yield break;
-        }
-
-        // Request ownership so we can handle activation when coordinator triggers it
-        handler.photonView.RequestOwnership();
-
-        // Wait for ownership with timeout
-        float timeout = 2f;
-        float elapsed = 0f;
-
-        while (!handler.photonView.IsMine && elapsed < timeout)
-        {
-            elapsed += Time.deltaTime;
-            yield return null;
-        }
-
-        if (handler.photonView.IsMine)
-        {
-        }
-        else
-        {
-
-            // Fallback: Try to request activation via RPC (but coordinator should handle this)
-            handler.photonView.RPC("RequestActivationFromOwner", RpcTarget.All);
-        }
-
-        ownershipRequestInProgress = false;
-    }
-
     private void OnTriggerExit2D(Collider2D collision)
     {
         int puzzleType = NetworkManager.Instance.GetLocalPlayerPuzzleType();
@@ -141,16 +100,6 @@ public class SecondPlayerFinalPuzzleCollider : MonoBehaviourPunCallbacks
 
             else if (puzzleType == 1)
                 warningTxt.SetActive(false);
-        }
-    }
-
-    // Optional: Add a method to check if both players are ready and activate manually
-    // This can be useful for testing without the coordinator
-    private void TryManualActivation()
-    {
-        if (handler != null && handler.photonView.IsMine && !handler.puzzleComplete)
-        {
-            handler.ActivatePuzzle();
         }
     }
 }

@@ -27,6 +27,8 @@ public class WiresHandler : MonoBehaviourPunCallbacks
 
     private void Start()
     {
+        incompletePanel.SetActive(true);
+        completePanel.SetActive(false);
         puzzleComplete = false;
         Debug.Log($"WiresHandler Start - puzzleComplete: {puzzleComplete}");
         Debug.Log($"incompletePanel reference: {incompletePanel != null}");
