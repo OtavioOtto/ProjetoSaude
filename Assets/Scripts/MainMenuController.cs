@@ -13,6 +13,8 @@ public class MainMenuController : MonoBehaviour
     [SerializeField] private GameObject loadingIndicator;
     [SerializeField] private GameObject errorPanel;
     [SerializeField] private GameObject controlsCanvas;
+    [SerializeField] private GameObject cutsceneUI;
+    [SerializeField] private CutsceneController cutscene;
 
     private float lastConnectionCheckTime;
 
@@ -24,7 +26,7 @@ public class MainMenuController : MonoBehaviour
             Debug.LogWarning("[MainMenuController] NetworkManager.Instance is null — something went wrong.");
             return;
         }
-        startButton.onClick.AddListener(StartGame);
+        startButton.onClick.AddListener(StartCutscene);
         controlsButton.onClick.AddListener(ShowControls);
 
         // Auto-attempt connection/reconnection when returning to main menu
@@ -109,7 +111,11 @@ public class MainMenuController : MonoBehaviour
                 break;
         }
     }
-
+    public void StartCutscene() 
+    {
+        cutsceneUI.SetActive(true);
+        cutscene.StartCutscene();
+    }
     public void StartGame()
     {
         if (NetworkManager.Instance.IsReadyForRoomOperations())
