@@ -133,7 +133,7 @@ public class FinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObservable
             lastNumber = buttonIndex;
 
             photonView.RPC("UpdateButtonText", RpcTarget.All, "[" + currentButton + "]");
-            timeLeft = 3f;
+            timeLeft = 2f;
             waitingForInput = true;
             missed = false;
 

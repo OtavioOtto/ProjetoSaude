@@ -18,6 +18,7 @@ public class MapPuzzleHandler : MonoBehaviourPunCallbacks
     [SerializeField] private GameObject generatorTwo;
     [SerializeField] private GameObject wires;
     [SerializeField] private Light2D lightGlobal;
+    
 
     void Start()
     {

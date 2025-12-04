@@ -1526,8 +1526,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MapPuzzleHandler
   playerRb: {fileID: 121314787}
-  puzzle: {fileID: 1254804564}
+  colliderPuzzle: {fileID: 0}
   speed: 2
+  puzzleComplete: 0
+  puzzleActive: 0
+  puzzle: {fileID: 1254804564}
+  photonView: {fileID: 0}
+  generatorOne: {fileID: 0}
+  generatorTwo: {fileID: 0}
+  wires: {fileID: 0}
+  lightGlobal: {fileID: 0}
 --- !u!1 &184706884
 GameObject:
   m_ObjectHideFlags: 0

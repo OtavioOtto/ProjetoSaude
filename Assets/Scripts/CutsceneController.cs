@@ -7,6 +7,11 @@ public class CutsceneController : MonoBehaviour
     [SerializeField] private MainMenuController menu;
     [SerializeField] private Animator anim;
     [SerializeField] private GameObject[] dialogues = new GameObject[5];
+    [Header("Audio Sources")]
+    [SerializeField] private AudioSource first;
+    [SerializeField] private AudioSource second;
+    [SerializeField] private AudioSource third;
+    [SerializeField] private AudioSource fourth;
     private bool allFirstScene;
     private void Start()
     {
@@ -46,6 +51,7 @@ public class CutsceneController : MonoBehaviour
     }
     public void StartCutscene() 
     {
+        first.Play();
         menuUI.SetActive(false);
     }
 
@@ -57,6 +63,8 @@ public class CutsceneController : MonoBehaviour
 
     private void EndSecondScene() 
     {
+        first.Stop();
+        second.Play();
         anim.SetBool("part3", true);
         dialogues[2].SetActive(false);
         dialogues[3].SetActive(true);
@@ -64,6 +72,8 @@ public class CutsceneController : MonoBehaviour
 
     private void EndThirdScene() 
     {
+        second.Stop();
+        third.Play();
         anim.SetBool("part4", true);
         dialogues[3].SetActive(false);
         dialogues[4].SetActive(true);
@@ -76,6 +86,8 @@ public class CutsceneController : MonoBehaviour
 
     private void EndFifthScene()
     {
+        third.Stop();
+        fourth.Play();
         anim.SetBool("part6", true);
         dialogues[4].SetActive(false);
     }

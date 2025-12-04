@@ -17,9 +17,11 @@ public class MainMenuController : MonoBehaviour
     [SerializeField] private CutsceneController cutscene;
 
     private float lastConnectionCheckTime;
+    private AudioSource musicBg;
 
     void Start()
     {
+        musicBg = GetComponent<AudioSource>();
 
         if (NetworkManager.Instance == null)
         {
@@ -113,6 +115,7 @@ public class MainMenuController : MonoBehaviour
     }
     public void StartCutscene() 
     {
+        musicBg.Stop();
         cutsceneUI.SetActive(true);
         cutscene.StartCutscene();
     }

@@ -7,8 +7,10 @@ public class WirePuzzleCollider : MonoBehaviour
     [SerializeField] private GameObject warningTxt;
     public GameObject puzzle;
     public bool playerInside;
+    private AudioSource sfx;
     void Start()
     {
+        sfx = GetComponent<AudioSource>();
         if (handler == null)
         {
             handler = FindFirstObjectByType<WiresHandler>();
@@ -34,6 +36,8 @@ public class WirePuzzleCollider : MonoBehaviour
             GameObject player = GameObject.Find("Morfeus(Clone)");
             puzzle.transform.position = new Vector3(player.transform.position.x, player.transform.position.y, puzzle.transform.position.z);
             playerInside = true;
+            sfx.Play();
+
         }
         else if (collision.CompareTag("Player") && collision.GetComponent<PhotonView>().IsMine && puzzleType != 1)
             warningTxt.SetActive(true);

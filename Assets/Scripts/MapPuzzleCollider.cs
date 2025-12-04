@@ -8,9 +8,11 @@ public class MapPuzzleCollider : MonoBehaviour
     [SerializeField] private GameObject warningTxt;
     public GameObject puzzle;
     public bool playerInside;
+    private AudioSource audioSource;
 
     void Start()
     {
+        audioSource = GetComponent<AudioSource>();
         if (handler == null)
         {
             handler = FindFirstObjectByType<MapPuzzleHandler>();
@@ -37,9 +39,11 @@ public class MapPuzzleCollider : MonoBehaviour
             {
                 PuzzleEnergySyncManager.Instance.LocalPlayerActivatedPuzzle(2);
             }
-
+            GameObject player = GameObject.Find("AlexCraxy(Clone)");
+            puzzle.transform.position = new Vector3(player.transform.position.x, player.transform.position.y, puzzle.transform.position.z);
             playerInside = true;
             handler.puzzleActive = true;
+            audioSource.Play();
         }
         else if (collision.CompareTag("Player") && collision.GetComponent<PhotonView>().IsMine && puzzleType != 2)
         {

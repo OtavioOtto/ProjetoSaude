@@ -7,7 +7,6 @@ public class FinalPuzzleCollider : MonoBehaviourPunCallbacks
     [SerializeField] private GameObject warningTxt;
     public GameObject ui;
     public bool playerInside;
-
     private void Start()
     {
         ui.SetActive(false);

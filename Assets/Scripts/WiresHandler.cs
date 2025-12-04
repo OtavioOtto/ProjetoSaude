@@ -20,8 +20,9 @@ public class WiresHandler : MonoBehaviourPunCallbacks
     public bool puzzleComplete;
     public bool isPuzzleActive;
 
-    [Header("Outside Scripts")]
+    [Header("Outside Objects")]
     [SerializeField] private WirePuzzleCollider puzzleCollider;
+    [SerializeField] private AudioSource finalPuzzleSfx;
 
     private const string PUZZLE_COMPLETE_KEY = "WirePuzzleComplete";
 
@@ -98,6 +99,7 @@ public class WiresHandler : MonoBehaviourPunCallbacks
     [PunRPC]
     void RPC_CompletePuzzle()
     {
+        
         Debug.Log($"RPC_CompletePuzzle received by player {PhotonNetwork.LocalPlayer.ActorNumber}");
         ApplyPuzzleCompletion();
 
@@ -110,6 +112,7 @@ public class WiresHandler : MonoBehaviourPunCallbacks
     {
         if (pathBlock != null)
         {
+            finalPuzzleSfx.Play();
             pathBlock.SetActive(false);
             Debug.Log($"PathBlock deactivated via RPC for player: {PhotonNetwork.LocalPlayer.ActorNumber}");
         }

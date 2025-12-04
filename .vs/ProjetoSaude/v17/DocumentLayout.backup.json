@@ -3,40 +3,12 @@
   "WorkspaceRootPath": "D:\\ProjetoSaude\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{49C407DC-CFD6-6BC3-BD8E-82346B1F8D54}|Assembly-CSharp.csproj|d:\\projetosaude\\assets\\scripts\\finalroomcollider.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{49C407DC-CFD6-6BC3-BD8E-82346B1F8D54}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\finalroomcollider.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{49C407DC-CFD6-6BC3-BD8E-82346B1F8D54}|Assembly-CSharp.csproj|d:\\projetosaude\\assets\\scripts\\playerbehaviours.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{49C407DC-CFD6-6BC3-BD8E-82346B1F8D54}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\playerbehaviours.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{49C407DC-CFD6-6BC3-BD8E-82346B1F8D54}|Assembly-CSharp.csproj|d:\\projetosaude\\assets\\scripts\\cutscenecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{49C407DC-CFD6-6BC3-BD8E-82346B1F8D54}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\cutscenecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{49C407DC-CFD6-6BC3-BD8E-82346B1F8D54}|Assembly-CSharp.csproj|D:\\ProjetoSaude\\assets\\scripts\\puzzleenergysyncmanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{49C407DC-CFD6-6BC3-BD8E-82346B1F8D54}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\puzzleenergysyncmanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{49C407DC-CFD6-6BC3-BD8E-82346B1F8D54}|Assembly-CSharp.csproj|D:\\ProjetoSaude\\assets\\scripts\\mappuzzlecollider.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{49C407DC-CFD6-6BC3-BD8E-82346B1F8D54}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\mappuzzlecollider.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{49C407DC-CFD6-6BC3-BD8E-82346B1F8D54}|Assembly-CSharp.csproj|D:\\ProjetoSaude\\assets\\scripts\\mappuzzlehandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{49C407DC-CFD6-6BC3-BD8E-82346B1F8D54}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\mappuzzlehandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{49C407DC-CFD6-6BC3-BD8E-82346B1F8D54}|Assembly-CSharp.csproj|D:\\ProjetoSaude\\assets\\scripts\\reactivateenergyhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{49C407DC-CFD6-6BC3-BD8E-82346B1F8D54}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\reactivateenergyhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{49C407DC-CFD6-6BC3-BD8E-82346B1F8D54}|Assembly-CSharp.csproj|D:\\ProjetoSaude\\assets\\scripts\\energypuzzlecompletion.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{49C407DC-CFD6-6BC3-BD8E-82346B1F8D54}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\energypuzzlecompletion.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{49C407DC-CFD6-6BC3-BD8E-82346B1F8D54}|Assembly-CSharp.csproj|D:\\ProjetoSaude\\assets\\scripts\\mainmenucontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{49C407DC-CFD6-6BC3-BD8E-82346B1F8D54}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\mainmenucontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{49C407DC-CFD6-6BC3-BD8E-82346B1F8D54}|Assembly-CSharp.csproj|D:\\ProjetoSaude\\assets\\scripts\\reactivateenergycollider.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{49C407DC-CFD6-6BC3-BD8E-82346B1F8D54}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\reactivateenergycollider.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{49C407DC-CFD6-6BC3-BD8E-82346B1F8D54}|Assembly-CSharp.csproj|D:\\ProjetoSaude\\assets\\scripts\\finalpuzzlehandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{49C407DC-CFD6-6BC3-BD8E-82346B1F8D54}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\finalpuzzlehandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -51,112 +23,28 @@
             {
               "$type": "Document",
               "DocumentIndex": 0,
-              "Title": "FinalRoomCollider.cs",
-              "DocumentMoniker": "D:\\ProjetoSaude\\Assets\\Scripts\\FinalRoomCollider.cs",
-              "RelativeDocumentMoniker": "Assets\\Scripts\\FinalRoomCollider.cs",
-              "ToolTip": "D:\\ProjetoSaude\\Assets\\Scripts\\FinalRoomCollider.cs",
-              "RelativeToolTip": "Assets\\Scripts\\FinalRoomCollider.cs",
-              "ViewState": "AgIAACQAAAAAAAAAAAAowDAAAAAAAAAAAAAAAA==",
+              "Title": "PlayerBehaviours.cs",
+              "DocumentMoniker": "D:\\ProjetoSaude\\Assets\\Scripts\\PlayerBehaviours.cs",
+              "RelativeDocumentMoniker": "Assets\\Scripts\\PlayerBehaviours.cs",
+              "ToolTip": "D:\\ProjetoSaude\\Assets\\Scripts\\PlayerBehaviours.cs",
+              "RelativeToolTip": "Assets\\Scripts\\PlayerBehaviours.cs",
+              "ViewState": "AgIAAEcAAAAAAAAAAAAAwFoAAAAxAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-03T20:36:21.768Z",
+              "WhenOpened": "2025-12-03T22:22:26.939Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 1,
-              "Title": "CutsceneController.cs",
-              "DocumentMoniker": "D:\\ProjetoSaude\\Assets\\Scripts\\CutsceneController.cs",
-              "RelativeDocumentMoniker": "Assets\\Scripts\\CutsceneController.cs",
-              "ToolTip": "D:\\ProjetoSaude\\Assets\\Scripts\\CutsceneController.cs",
-              "RelativeToolTip": "Assets\\Scripts\\CutsceneController.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Title": "FinalPuzzleHandler.cs",
+              "DocumentMoniker": "D:\\ProjetoSaude\\Assets\\Scripts\\FinalPuzzleHandler.cs",
+              "RelativeDocumentMoniker": "Assets\\Scripts\\FinalPuzzleHandler.cs",
+              "ToolTip": "D:\\ProjetoSaude\\Assets\\Scripts\\FinalPuzzleHandler.cs",
+              "RelativeToolTip": "Assets\\Scripts\\FinalPuzzleHandler.cs",
+              "ViewState": "AgIAAAMAAAAAAAAAAAAAAF4AAAAwAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-03T17:44:40.634Z",
+              "WhenOpened": "2025-12-03T21:58:49.455Z",
               "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 7,
-              "Title": "MainMenuController.cs",
-              "DocumentMoniker": "D:\\ProjetoSaude\\Assets\\Scripts\\MainMenuController.cs",
-              "RelativeDocumentMoniker": "Assets\\Scripts\\MainMenuController.cs",
-              "ToolTip": "D:\\ProjetoSaude\\Assets\\Scripts\\MainMenuController.cs",
-              "RelativeToolTip": "Assets\\Scripts\\MainMenuController.cs",
-              "ViewState": "AgIAAJsAAAAAAAAAAAAuwHMAAAAhAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-03T17:14:27.456Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 6,
-              "Title": "EnergyPuzzleCompletion.cs",
-              "DocumentMoniker": "D:\\ProjetoSaude\\Assets\\Scripts\\EnergyPuzzleCompletion.cs",
-              "RelativeDocumentMoniker": "Assets\\Scripts\\EnergyPuzzleCompletion.cs",
-              "ToolTip": "D:\\ProjetoSaude\\Assets\\Scripts\\EnergyPuzzleCompletion.cs",
-              "RelativeToolTip": "Assets\\Scripts\\EnergyPuzzleCompletion.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABcAAAApAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-03T01:53:29.338Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "PuzzleEnergySyncManager.cs",
-              "DocumentMoniker": "D:\\ProjetoSaude\\Assets\\Scripts\\PuzzleEnergySyncManager.cs",
-              "RelativeDocumentMoniker": "Assets\\Scripts\\PuzzleEnergySyncManager.cs",
-              "ToolTip": "D:\\ProjetoSaude\\Assets\\Scripts\\PuzzleEnergySyncManager.cs",
-              "RelativeToolTip": "Assets\\Scripts\\PuzzleEnergySyncManager.cs",
-              "ViewState": "AgIAAA8AAAAAAAAAAAAowAMAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-02T23:59:35.363Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 5,
-              "Title": "ReactivateEnergyHandler.cs",
-              "DocumentMoniker": "D:\\ProjetoSaude\\Assets\\Scripts\\ReactivateEnergyHandler.cs",
-              "RelativeDocumentMoniker": "Assets\\Scripts\\ReactivateEnergyHandler.cs",
-              "ToolTip": "D:\\ProjetoSaude\\Assets\\Scripts\\ReactivateEnergyHandler.cs",
-              "RelativeToolTip": "Assets\\Scripts\\ReactivateEnergyHandler.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAADoAAAAeAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-02T21:57:41.91Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 4,
-              "Title": "MapPuzzleHandler.cs",
-              "DocumentMoniker": "D:\\ProjetoSaude\\Assets\\Scripts\\MapPuzzleHandler.cs",
-              "RelativeDocumentMoniker": "Assets\\Scripts\\MapPuzzleHandler.cs",
-              "ToolTip": "D:\\ProjetoSaude\\Assets\\Scripts\\MapPuzzleHandler.cs",
-              "RelativeToolTip": "Assets\\Scripts\\MapPuzzleHandler.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAADQAAABCAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-02T20:43:45.893Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "MapPuzzleCollider.cs",
-              "DocumentMoniker": "D:\\ProjetoSaude\\Assets\\Scripts\\MapPuzzleCollider.cs",
-              "RelativeDocumentMoniker": "Assets\\Scripts\\MapPuzzleCollider.cs",
-              "ToolTip": "D:\\ProjetoSaude\\Assets\\Scripts\\MapPuzzleCollider.cs",
-              "RelativeToolTip": "Assets\\Scripts\\MapPuzzleCollider.cs",
-              "ViewState": "AgIAACUAAAAAAAAAAAAqwCAAAAAjAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-02T22:46:41.278Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 8,
-              "Title": "ReactivateEnergyCollider.cs",
-              "DocumentMoniker": "D:\\ProjetoSaude\\Assets\\Scripts\\ReactivateEnergyCollider.cs",
-              "RelativeDocumentMoniker": "Assets\\Scripts\\ReactivateEnergyCollider.cs",
-              "ToolTip": "D:\\ProjetoSaude\\Assets\\Scripts\\ReactivateEnergyCollider.cs",
-              "RelativeToolTip": "Assets\\Scripts\\ReactivateEnergyCollider.cs",
-              "ViewState": "AgIAABMAAAAAAAAAAAAgwAAAAAACAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-02T21:44:24.055Z"
             }
           ]
         }

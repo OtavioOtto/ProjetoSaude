@@ -70,6 +70,7 @@
     <Compile Include="Assets\Scripts\EnergyPuzzleCompletion.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TMP_TextSelector_A.cs" />
     <Compile Include="Assets\Scripts\NetworkManager.cs" />
+    <Compile Include="Assets\Scripts\DistanceVolumeControl.cs" />
     <Compile Include="Assets\Photon\PhotonChat\Demos\DemoChat\ChannelSelector.cs" />
     <Compile Include="Assets\Scripts\UnpoweredWireStats.cs" />
     <Compile Include="Assets\Scripts\WireDialogsHandler.cs" />

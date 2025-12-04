@@ -135,7 +135,7 @@ public class SecondPlayerFinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObs
             CheckSkillCheckResult();
         }
 
-        if (Time.time - lastSkillCheckTime > 5f)
+        if (Time.time - lastSkillCheckTime > 3.5f)
         {
             FailSkillCheck();
         }

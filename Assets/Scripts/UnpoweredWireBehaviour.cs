@@ -20,6 +20,7 @@ public class UnpoweredWireBehaviour : MonoBehaviour
             PoweredWireStats statsPower = collision.GetComponent<PoweredWireStats>();
             if (statsPower.color == stats.color)
             {
+                statsPower.gameObject.GetComponent<AudioSource>().Play();
                 statsPower.connected = true;
                 statsPower.movable = true;
 

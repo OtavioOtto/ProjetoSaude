@@ -7,8 +7,10 @@ public class ReactivateEnergyCollider : MonoBehaviour
     [SerializeField] private GameObject warningTxt;
     public GameObject puzzle;
     public bool playerInside;
+    private AudioSource audioSource;
     void Start()
     {
+        audioSource = GetComponent<AudioSource>();
         if (handler == null)
         {
             handler = FindFirstObjectByType<ReactivateEnergyHandler>();
@@ -21,6 +23,7 @@ public class ReactivateEnergyCollider : MonoBehaviour
             enabled = false;
             return;
         }
+        
     }
     private void OnTriggerEnter2D(Collider2D collision)
     {
@@ -38,6 +41,7 @@ public class ReactivateEnergyCollider : MonoBehaviour
 
             playerInside = true;
             handler.puzzleActive = true;
+            audioSource.Play();
         }
         else if (collision.CompareTag("Player") && collision.GetComponent<PhotonView>().IsMine && puzzleType != 1)
         {

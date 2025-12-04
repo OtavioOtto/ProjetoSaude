@@ -27,6 +27,7 @@ public class PlayerBehaviours : MonoBehaviourPunCallbacks, IPunObservable
     private Vector2 networkLastMoveDirection;
     private bool networkFacingRight = true;
     private Vector3 networkScale;
+    private AudioSource footsteps;
 
     public bool myPuzzleActive;
     public bool wirePuzzleActive;
@@ -34,6 +35,7 @@ public class PlayerBehaviours : MonoBehaviourPunCallbacks, IPunObservable
     public bool energyPuzzleActive;
     private void Awake()
     {
+        footsteps = GetComponent<AudioSource>();
         rb = GetComponent<Rigidbody2D>();
         // Only enable physics and input for local player
         if (!photonView.IsMine)
@@ -86,6 +88,8 @@ public class PlayerBehaviours : MonoBehaviourPunCallbacks, IPunObservable
                 facingRight = networkFacingRight;
             }
         }
+        if(rb.linearVelocity == new Vector2(0,0))
+            footsteps.mute = true;
 
         // Always update animations for all players
         Animate();
@@ -159,7 +163,7 @@ public class PlayerBehaviours : MonoBehaviourPunCallbacks, IPunObservable
             {
                 lastMoveDirection = input;
             }
-
+            footsteps.mute = false;
             input.x = Input.GetAxisRaw("Horizontal");
             input.y = Input.GetAxisRaw("Vertical");
             input.Normalize();
