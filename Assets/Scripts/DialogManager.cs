@@ -45,14 +45,12 @@ public class DialogManager : MonoBehaviourPunCallbacks
 
     void Start()
     {
-        // Hide dialog panel initially
         dialogCanvas.SetActive(false);
         continueButton.onClick.AddListener(ContinueDialog);
     }
 
     void Update()
     {
-        // Allow skipping dialog with Space or Enter
         if (dialogActive && Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.Return))
         {
             if (isTyping)
@@ -82,14 +80,12 @@ public class DialogManager : MonoBehaviourPunCallbacks
 
     public void StartDialog(Dialog[] dialog)
     {
-        // Use RPC to sync dialog across network
         photonView.RPC("StartDialogFromSerializedRPC", RpcTarget.All, SerializeDialog(dialog));
     }
 
 
     private void DisplayLine(Dialog dialogLine)
     {
-        Debug.Log($"Displaying line: {dialogLine.dialogText}, portrait: {dialogLine.portrait?.name}");
         if (speakerPortrait != null && dialogLine.portrait != null)
         {
             speakerPortrait.sprite = dialogLine.portrait;
@@ -153,11 +149,8 @@ public class DialogManager : MonoBehaviourPunCallbacks
         dialogCanvas.SetActive(false);
         currentDialog = null;
     }
-
-    // Serialization methods for RPC
     private object[] SerializeDialog(Dialog[] dialog)
     {
-        // Each dialog has 2 properties: dialogText and portrait
         object[] serialized = new object[dialog.Length * 2];
         int index = 0;
 
@@ -174,7 +167,6 @@ public class DialogManager : MonoBehaviourPunCallbacks
     [PunRPC]
     private void StartDialogFromSerializedRPC(object[] serializedDialog)
     {
-        // Each dialog takes 2 elements in the array
         int dialogLength = serializedDialog.Length / 2;
         Dialog[] dialog = new Dialog[dialogLength];
         int index = 0;
@@ -188,7 +180,6 @@ public class DialogManager : MonoBehaviourPunCallbacks
             };
         }
 
-        // Call the main RPC method with the deserialized dialog
         StartDialogRPC(dialog);
     }
 

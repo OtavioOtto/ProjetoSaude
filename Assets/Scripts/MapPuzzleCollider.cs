@@ -34,7 +34,6 @@ public class MapPuzzleCollider : MonoBehaviour
         {
             puzzle.SetActive(true);
 
-            // Sincronizar com o sync manager
             if (PuzzleEnergySyncManager.Instance != null)
             {
                 PuzzleEnergySyncManager.Instance.LocalPlayerActivatedPuzzle(2);

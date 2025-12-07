@@ -22,7 +22,6 @@ public class PlayerBehaviours : MonoBehaviourPunCallbacks, IPunObservable
     [SerializeField] private ReactivateEnergyHandler energyPuzzle;
     [SerializeField] private GameObject uiDialog;
 
-    // Network synced variables
     private Vector2 networkInput;
     private Vector2 networkLastMoveDirection;
     private bool networkFacingRight = true;
@@ -37,10 +36,9 @@ public class PlayerBehaviours : MonoBehaviourPunCallbacks, IPunObservable
     {
         footsteps = GetComponent<AudioSource>();
         rb = GetComponent<Rigidbody2D>();
-        // Only enable physics and input for local player
         if (!photonView.IsMine)
         {
-            rb.bodyType = RigidbodyType2D.Kinematic;// Disable physics for remote players
+            rb.bodyType = RigidbodyType2D.Kinematic;
         }   
             
     }
@@ -52,15 +50,14 @@ public class PlayerBehaviours : MonoBehaviourPunCallbacks, IPunObservable
         anim = GetComponent<Animator>();
         networkScale = transform.localScale;
 
-        // Find puzzle handlers based on character selection
         int puzzleType = NetworkManager.Instance.GetLocalPlayerPuzzleType();
 
-        if (puzzleType == 1) // Alex - FinalPuzzleHandler
+        if (puzzleType == 1)
         {
             finalPuzzle = FindFirstObjectByType<FinalPuzzleHandler>();
             wirePuzzle = FindFirstObjectByType<WiresHandler>();
         }
-        else // Morfeus - SecondPlayerFinalPuzzleHandler
+        else
         {
             secondPlayerFinalPuzzle = FindFirstObjectByType<SecondPlayerFinalPuzzleHandler>();
         }
@@ -70,18 +67,15 @@ public class PlayerBehaviours : MonoBehaviourPunCallbacks, IPunObservable
     {
         if (photonView.IsMine)
         {
-            // Local player: handle input and movement
             PlayerMovement();
             if ((input.x < 0 && facingRight) || (input.x > 0 && !facingRight))
                 Flip();
         }
         else
         {
-            // Remote player: use network synced values
             input = networkInput;
             lastMoveDirection = networkLastMoveDirection;
 
-            // Apply the synced scale for flipping
             if (transform.localScale != networkScale)
             {
                 transform.localScale = networkScale;
@@ -91,7 +85,6 @@ public class PlayerBehaviours : MonoBehaviourPunCallbacks, IPunObservable
         if(rb.linearVelocity == new Vector2(0,0))
             footsteps.mute = true;
 
-        // Always update animations for all players
         Animate();
     }
 
@@ -99,7 +92,6 @@ public class PlayerBehaviours : MonoBehaviourPunCallbacks, IPunObservable
     {
         int puzzleType = NetworkManager.Instance.GetLocalPlayerPuzzleType();
 
-        // Update puzzle references if null
         if (puzzleType == 1 && finalPuzzle == null)
             finalPuzzle = FindFirstObjectByType<FinalPuzzleHandler>();
 
@@ -115,10 +107,8 @@ public class PlayerBehaviours : MonoBehaviourPunCallbacks, IPunObservable
         if (puzzleType == 2 && mapPuzzle == null)
             mapPuzzle = FindFirstObjectByType<MapPuzzleHandler>();
 
-        // Check puzzle state with null checks - MORE ROBUST CHECK
         bool wasPuzzleActive = myPuzzleActive;
 
-        // Check if ANY puzzle is active (including skill check)
         bool isAnyPuzzleActive = false;
         bool isWirePuzzleActive = false;
         bool isMapPuzzleActive = false;
@@ -130,7 +120,6 @@ public class PlayerBehaviours : MonoBehaviourPunCallbacks, IPunObservable
         }
         else if (puzzleType == 2 && secondPlayerFinalPuzzle != null)
         {
-            // Check both puzzle active AND skill check active for Player 2
             isAnyPuzzleActive = secondPlayerFinalPuzzle.isPuzzleActive || secondPlayerFinalPuzzle.isSkillCheckActive;
         }
 
@@ -149,10 +138,6 @@ public class PlayerBehaviours : MonoBehaviourPunCallbacks, IPunObservable
         energyPuzzleActive = isEnergyPuzzleActive;
         bool shouldBlockMovement = myPuzzleActive || wirePuzzleActive || mapPuzzleActive || energyPuzzleActive;
 
-        if (wasPuzzleActive != myPuzzleActive)
-        {
-            Debug.Log($"Puzzle active state changed: {myPuzzleActive}, Wire: {wirePuzzleActive}, Block Movement: {shouldBlockMovement}");
-        }
 
         if (!shouldBlockMovement && !uiDialog.activeSelf)
         {
@@ -170,10 +155,8 @@ public class PlayerBehaviours : MonoBehaviourPunCallbacks, IPunObservable
         }
         else
         {
-            // Puzzle is active - stop movement
             input = Vector2.zero;
-            rb.linearVelocity = Vector2.zero; // Ensure physics stops too
-            Debug.Log($"Movement blocked - Puzzle: {myPuzzleActive}, Wire: {wirePuzzleActive}");
+            rb.linearVelocity = Vector2.zero;
         }
     }
 
@@ -201,7 +184,6 @@ public class PlayerBehaviours : MonoBehaviourPunCallbacks, IPunObservable
         transform.localScale = scale;
         facingRight = !facingRight;
 
-        // Update network scale so other players see the flip
         networkScale = scale;
         networkFacingRight = facingRight;
     }
@@ -210,7 +192,6 @@ public class PlayerBehaviours : MonoBehaviourPunCallbacks, IPunObservable
     {
         if (stream.IsWriting)
         {
-            // We own this player: send the others our data
             stream.SendNext(input);
             stream.SendNext(lastMoveDirection);
             stream.SendNext(facingRight);
@@ -218,7 +199,6 @@ public class PlayerBehaviours : MonoBehaviourPunCallbacks, IPunObservable
         }
         else
         {
-            // Network player, receive data
             networkInput = (Vector2)stream.ReceiveNext();
             networkLastMoveDirection = (Vector2)stream.ReceiveNext();
             networkFacingRight = (bool)stream.ReceiveNext();

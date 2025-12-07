@@ -1,4 +1,3 @@
-// MainMenuController.cs
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -24,32 +23,19 @@ public class MainMenuController : MonoBehaviour
         musicBg = GetComponent<AudioSource>();
 
         if (NetworkManager.Instance == null)
-        {
-            Debug.LogWarning("[MainMenuController] NetworkManager.Instance is null — something went wrong.");
             return;
-        }
+
         startButton.onClick.AddListener(StartCutscene);
         controlsButton.onClick.AddListener(ShowControls);
 
-        // Auto-attempt connection/reconnection when returning to main menu
         if (!PhotonNetwork.IsConnected)
-        {
-            Debug.Log("MainMenu loaded - not connected, attempting connection");
             NetworkManager.Instance.ConnectToPhoton();
-        }
+
         else if (!PhotonNetwork.InLobby)
-        {
-            Debug.Log("MainMenu loaded - connected but not in lobby, rejoining lobby");
             NetworkManager.Instance.RejoinLobbyAfterReset();
-        }
-        else
-        {
-            Debug.Log("MainMenu loaded - already in lobby");
-        }
 
         UpdateConnectionStatus();
 
-        // Hide error panel initially
         errorPanel.SetActive(false);
 
         lastConnectionCheckTime = Time.time;
@@ -57,7 +43,6 @@ public class MainMenuController : MonoBehaviour
 
     void Update()
     {
-        // Update connection status regularly
         if (Time.time - lastConnectionCheckTime > 1f && !NetworkManager.Instance.GetConnectionStatus().Equals(NetworkManager.ConnectionState.InLobby))
         {
             UpdateConnectionStatus();
@@ -73,9 +58,6 @@ public class MainMenuController : MonoBehaviour
         string status = NetworkManager.Instance.GetConnectionStatus();
         connectionStatusText.text = "Status: " + status;
 
-        // More accurate debug info
-        Debug.Log($"UpdateConnectionStatus: UI Status={status}, Photon State={PhotonNetwork.NetworkClientState}, InRoom={PhotonNetwork.InRoom}, InLobby={PhotonNetwork.InLobby}");
-
         switch (NetworkManager.Instance.GetCurrentState())
         {
             case NetworkManager.ConnectionState.InLobby:
@@ -86,8 +68,8 @@ public class MainMenuController : MonoBehaviour
 
             case NetworkManager.ConnectionState.ConnectedToMaster:
                 connectionStatusText.color = Color.yellow;
-                connectionStatusText.text = "Status: Connected"; // More user-friendly
-                startButton.interactable = true; // Allow starting even if just connected to master
+                connectionStatusText.text = "Status: Connected"; 
+                startButton.interactable = true; 
                 loadingIndicator.SetActive(false);
                 break;
 
@@ -98,7 +80,6 @@ public class MainMenuController : MonoBehaviour
                 break;
 
             case NetworkManager.ConnectionState.InRoom:
-                // This shouldn't happen in main menu, but if it does, show appropriate status
                 connectionStatusText.color = Color.blue;
                 connectionStatusText.text = "Status: In Game";
                 startButton.interactable = false;
@@ -132,16 +113,10 @@ public class MainMenuController : MonoBehaviour
         }
         else
         {
-            Debug.LogError("Not ready for room operations yet! Status: " + NetworkManager.Instance.GetConnectionStatus() +
-                          ", Photon State: " + PhotonNetwork.NetworkClientState);
-
-            // Show error to user
             ShowError("Not connected yet. Please wait...");
 
-            // Try to continue connection process
             NetworkManager.Instance.ConnectToPhoton();
 
-            // Set flag to join room when ready
             NetworkManager.Instance.SetWantsToJoinRoom(true);
         }
     }
@@ -161,7 +136,6 @@ public class MainMenuController : MonoBehaviour
         errorText.text = message;
         errorPanel.SetActive(true);
 
-        // Auto-hide error after 3 seconds
         Invoke("HideError", 3f);
     }
 
@@ -175,7 +149,6 @@ public class MainMenuController : MonoBehaviour
         Application.Quit();
     }
 
-    // Button handler for retrying connection
     public void RetryConnection()
     {
         errorPanel.SetActive(false);

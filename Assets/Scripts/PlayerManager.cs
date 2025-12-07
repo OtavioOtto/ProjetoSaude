@@ -1,4 +1,3 @@
-// PlayerManager.cs (Simple fix)
 using UnityEngine;
 using Photon.Pun;
 
@@ -20,7 +19,5 @@ public class PlayerManager : MonoBehaviourPunCallbacks, IPunObservable
 
     public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
     {
-        // Empty implementation - we don't need to sync anything here
-        // Photon Transform View handles position/rotation sync
     }
 }

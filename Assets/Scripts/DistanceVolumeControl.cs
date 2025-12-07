@@ -16,11 +16,9 @@ public class DistanceVolumeControl : MonoBehaviour
         if (NetworkManager.Instance != null)
         {
             playerPuzzleType = NetworkManager.Instance.GetLocalPlayerPuzzleType();
-            Debug.Log($"DistanceVolumeControl: Player puzzle type = {playerPuzzleType}");
         }
         else
         {
-            Debug.LogWarning("NetworkManager not found. Disabling distance volume control.");
             enabled = false;
             return;
         }
@@ -52,14 +50,6 @@ public class DistanceVolumeControl : MonoBehaviour
             }
         }
 
-        if (playerClone == null)
-        {
-            Debug.LogWarning($"DistanceVolumeControl: Could not find player clone for puzzle type {playerPuzzleType}");
-        }
-        else
-        {
-            Debug.Log($"DistanceVolumeControl: Found player clone: {playerClone.name}");
-        }
     }
 
     void SetupAudioListener()
@@ -71,12 +61,10 @@ public class DistanceVolumeControl : MonoBehaviour
             if (listener != null)
             {
                 audioListenerTransform = listener.transform;
-                Debug.Log($"DistanceVolumeControl: AudioListener found on {playerClone.name}");
             }
             else
             {
                 audioListenerTransform = playerClone.transform;
-                Debug.Log($"DistanceVolumeControl: Using player transform as audio source (no AudioListener found)");
             }
         }
         else
@@ -85,11 +73,9 @@ public class DistanceVolumeControl : MonoBehaviour
             if (listener != null)
             {
                 audioListenerTransform = listener.transform;
-                Debug.Log("DistanceVolumeControl: Using first available AudioListener in scene");
             }
             else
             {
-                Debug.LogWarning("No AudioListener found in the scene. Distance-based volume will not work.");
                 enabled = false;
             }
         }

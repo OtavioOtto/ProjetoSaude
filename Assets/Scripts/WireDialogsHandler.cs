@@ -12,7 +12,6 @@ public class WireDialogsHandler : MonoBehaviour
         secondDialogType = transform.GetChild(1).gameObject;
     }
 
-    // Update is called once per frame
     void Update()
     {
         if (generatorUnpowered.activeSelf) 

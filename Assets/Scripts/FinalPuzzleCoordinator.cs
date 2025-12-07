@@ -56,12 +56,10 @@ public class FinalPuzzleCoordinator : MonoBehaviourPunCallbacks
         {
             if (PhotonNetwork.IsMasterClient)
             {
-                Debug.Log("Master client forcing game end via 0 key");
                 EndGame();
             }
             else
             {
-                Debug.Log("Non-master client requesting game end via 0 key");
                 photonView.RPC("RequestGameEnd", RpcTarget.MasterClient);
             }
         }
@@ -70,7 +68,6 @@ public class FinalPuzzleCoordinator : MonoBehaviourPunCallbacks
     [PunRPC]
     public void RequestGameEnd()
     {
-        Debug.Log("Master client received game end request from another player");
         if (PhotonNetwork.IsMasterClient)
         {
             EndGame();
@@ -92,18 +89,14 @@ public class FinalPuzzleCoordinator : MonoBehaviourPunCallbacks
     {
         puzzlesCompleted++;
 
-        Debug.Log($"Puzzle completed by Player {playerNumber}. Total completed: {puzzlesCompleted}");
-
         if (puzzlesCompleted >= 2)
         {
-            Debug.Log("Both puzzles completed! Ending game...");
             EndGame();
         }
     }
 
     public void EndGame()
     {
-        Debug.Log($"EndGame called by player {PhotonNetwork.LocalPlayer.ActorNumber} - Initiating complete game reset");
 
         player1InPosition = false;
         player2InPosition = false;
@@ -113,11 +106,9 @@ public class FinalPuzzleCoordinator : MonoBehaviourPunCallbacks
         if (photonView != null && photonView.IsMine)
         {
             photonView.RPC("ResetAllPlayers", RpcTarget.All);
-            Debug.Log("ResetAllPlayers RPC sent to all players");
         }
         else
         {
-            Debug.Log("EndGame called but no valid photonView, resetting locally");
             ResetAllPlayers();
         }
     }
@@ -125,8 +116,6 @@ public class FinalPuzzleCoordinator : MonoBehaviourPunCallbacks
     [PunRPC]
     public void ResetAllPlayers()
     {
-        Debug.Log($"ResetAllPlayers RPC received by player {PhotonNetwork.LocalPlayer?.ActorNumber} - Resetting game completely");
-
         player1InPosition = false;
         player2InPosition = false;
         bothPuzzlesActive = false;
@@ -138,7 +127,6 @@ public class FinalPuzzleCoordinator : MonoBehaviourPunCallbacks
         }
         else
         {
-            Debug.LogWarning("NetworkManager instance not found, loading main menu directly");
             SceneManager.LoadScene("MainMenu");
         }
     }
@@ -161,67 +149,45 @@ public class FinalPuzzleCoordinator : MonoBehaviourPunCallbacks
     [PunRPC]
     public void ReportSkillCheckFailure()
     {
-        Debug.Log($"[Coordinator] ReportSkillCheckFailure received by player {PhotonNetwork.LocalPlayer.ActorNumber} (IsMaster: {PhotonNetwork.IsMasterClient})");
 
         if (!PhotonNetwork.IsMasterClient)
         {
-            Debug.LogWarning("[Coordinator] ReportSkillCheckFailure was received by non-master client. Ignoring.");
             return;
         }
 
-        Debug.Log("Coordinator: Resetting both puzzles due to skill check failure");
-
-        // First, stop both puzzles
         StopAllPuzzles();
 
-        // Reset the completion counter
         puzzlesCompleted = 0;
 
-        // Reset Player 1 puzzle
         if (player1Puzzle != null)
         {
-            Debug.Log("[Coordinator] Directly resetting Player uzzle");
             player1Puzzle.ResetPuzzleProgress();
         }
 
-        // Reset Player 2 puzzle
         if (player2Puzzle != null)
         {
-            Debug.Log("[Coordinator] Directly resetting Player 2 puzzle");
             player2Puzzle.ResetPuzzle();
         }
 
-        // Also send RPCs for other clients
         photonView.RPC("ResetAllPuzzles", RpcTarget.Others);
 
-        // CRITICAL: Reactivate both puzzles after reset
-        // Set bothPuzzlesActive to false to allow reactivation
         bothPuzzlesActive = false;
 
-        // Small delay to ensure reset is complete, then reactivate
         ReactivateAfterReset();
     }
 
     private void ReactivateAfterReset()
     {
-
-        // Check if both players are still in position
         if (player1InPosition && player2InPosition)
         {
-            Debug.Log("Coordinator: Reactivating puzzles after reset");
             bothPuzzlesActive = true;
             StartCoroutine(ActivateBothPuzzles());
-        }
-        else
-        {
-            Debug.Log("Coordinator: Players not in position, not reactivating");
         }
     }
 
     [PunRPC]
     private void ResetAllPuzzles()
     {
-        // Reset local puzzle states
         puzzlesCompleted = 0;
 
         if (player1Puzzle != null)
@@ -240,21 +206,17 @@ public class FinalPuzzleCoordinator : MonoBehaviourPunCallbacks
             bothPuzzlesActive = true;
             puzzlesCompleted = 0;
 
-            Debug.Log("Coordinator: Activating both puzzles simultaneously");
-
             StartCoroutine(ActivateBothPuzzles());
         }
         else if (shouldDeactivate)
         {
             bothPuzzlesActive = false;
             StopAllPuzzles();
-            Debug.Log("Coordinator: Player left - stopping all puzzles");
         }
     }
 
     private IEnumerator ActivateBothPuzzles()
     {
-        Debug.Log("Coordinator: Starting simultaneous puzzle activation");
 
         yield return new WaitForSeconds(0.3f);
 
@@ -263,7 +225,6 @@ public class FinalPuzzleCoordinator : MonoBehaviourPunCallbacks
 
 
             player2Puzzle.photonView.RPC("ForceActivatePuzzle", RpcTarget.All);
-            Debug.Log("Coordinator: Activated Player 2 puzzle");
         }
 
         yield return new WaitForSeconds(0.2f);
@@ -271,10 +232,7 @@ public class FinalPuzzleCoordinator : MonoBehaviourPunCallbacks
         if (player1Puzzle != null && player1Puzzle.photonView != null)
         {
             player1Puzzle.photonView.RPC("ForceActivatePuzzle", RpcTarget.All);
-            Debug.Log("Coordinator: Activated Player 1 puzzle");
         }
-
-        Debug.Log("Coordinator: Both puzzles activated");
     }
 
 

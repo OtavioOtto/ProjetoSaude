@@ -67,7 +67,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 672e8feb5c48d254bae90a0e4ec4a35e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ReactivateEnergyHandler
-  speed: 2
   puzzleComplete: 0
   puzzleActive: 0
   photonView: {fileID: 5946734056385165112}

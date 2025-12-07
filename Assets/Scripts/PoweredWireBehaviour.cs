@@ -17,13 +17,11 @@ public class PoweredWireBehaviour : MonoBehaviour
         stats = gameObject.GetComponent<PoweredWireStats>();
         line = gameObject.GetComponent<LineRenderer>();
 
-        // Ensure consistent Z position
         Vector3 pos = transform.position;
         transform.position = pos;
         stats.startPos = pos;
         transform.localPosition = new Vector3(transform.localPosition.x, transform.localPosition.y, -1f);
 
-        // Set initial line positions
         if (line != null)
         {
             line.SetPosition(1, new Vector3(transform.position.x - 1f, transform.position.y, 0f));
@@ -47,7 +45,6 @@ public class PoweredWireBehaviour : MonoBehaviour
 
     private void OnEnable()
     {
-        // If Start hasn't run yet, we can't initialize here
         if (isInitialized && line != null)
         {
             line.SetPosition(1, new Vector3(transform.position.x - 1f, transform.position.y, 0f));

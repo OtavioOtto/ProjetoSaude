@@ -82,8 +82,6 @@ public class FinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObservable
     [PunRPC]
     public void ForceActivatePuzzle()
     {
-        Debug.Log($"ForceActivatePuzzle RPC received for Player 1 - IsMine: {photonView.IsMine}");
-
         int puzzleType = NetworkManager.Instance.GetLocalPlayerPuzzleType();
         if (PhotonNetwork.LocalPlayer != null && puzzleType == 1 && !puzzleComplete && !isPuzzleActive)
         {
@@ -93,12 +91,7 @@ public class FinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObservable
             if (puzzleCoroutine == null)
             {
                 puzzleCoroutine = StartCoroutine(FinalPuzzle());
-                Debug.Log("Player 1 puzzle STARTED via ForceActivatePuzzle");
             }
-        }
-        else
-        {
-            Debug.Log($"ForceActivatePuzzle rejected - Player: {PhotonNetwork.LocalPlayer?.ActorNumber}, Complete: {puzzleComplete}, Active: {isPuzzleActive}");
         }
     }
 
@@ -267,12 +260,10 @@ public class FinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObservable
 
         if (PhotonNetwork.IsMasterClient)
         {
-            Debug.Log("Master client forcing game end via final puzzle");
             coordinator.EndGame();
         }
         else
         {
-            Debug.Log("Non-master client requesting game end via final puzzle");
             FinalPuzzleCoordinator.Instance.photonView.RPC("RequestGameEnd", RpcTarget.MasterClient);
         }
     }
@@ -362,7 +353,6 @@ public class FinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObservable
         isPuzzleActive = false;
         waitingForInput = false;
 
-        // Clear any active coroutines
         if (puzzleCoroutine != null)
         {
             StopCoroutine(puzzleCoroutine);
@@ -375,7 +365,6 @@ public class FinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObservable
         if (buttonTxt != null)
             buttonTxt.SetText("");
 
-        Debug.Log("Player 1 puzzle reset complete - ready for reactivation");
     }
 
     [PunRPC]

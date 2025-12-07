@@ -66,11 +66,6 @@ public class SecondPlayerFinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObs
         int puzzleType = NetworkManager.Instance.GetLocalPlayerPuzzleType();
         if (!photonView.IsMine || puzzleType != 2) return;
 
-        if (isPuzzleActive && !puzzleComplete && Time.frameCount % 60 == 0)
-        {
-            Debug.Log($"Puzzle Active: {isPuzzleActive}, Skill Check Active: {isSkillCheckActive}, Time since last: {Time.time - lastSkillCheckTime}");
-        }
-
         if (puzzleComplete && isPuzzleActive)
         {
             StopPuzzle();
@@ -84,7 +79,6 @@ public class SecondPlayerFinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObs
             if (timeSinceLastCheck > skillCheckFrequency || firstTime)
             {
                 firstTime = false;
-                Debug.Log($"Starting skill check! Time since last: {timeSinceLastCheck}");
                 StartSkillCheck();
             }
         }
@@ -172,25 +166,18 @@ public class SecondPlayerFinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObs
 
     void FailSkillCheck()
     {
-        Debug.Log($"[P2] FailSkillCheck called by player {PhotonNetwork.LocalPlayer.ActorNumber}");
 
         photonView.RPC("ShowSkillCheckResult", RpcTarget.All, "Falhou!");
         EndSkillCheck();
 
         if (FinalPuzzleCoordinator.Instance != null)
         {
-            Debug.Log($"[P2] Sending ReportSkillCheckFailure to MasterClient");
             FinalPuzzleCoordinator.Instance.photonView.RPC("ReportSkillCheckFailure", RpcTarget.MasterClient);
-        }
-        else
-        {
-            Debug.LogError("[P2] FinalPuzzleCoordinator.Instance is null!");
         }
     }
 
     void SuccessSkillCheck()
     {
-        Debug.Log("Skill check SUCCESS!");
         photonView.RPC("ShowSkillCheckResult", RpcTarget.All, "Boa!");
         EndSkillCheck();
     }
@@ -229,7 +216,6 @@ public class SecondPlayerFinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObs
         int puzzleType = NetworkManager.Instance.GetLocalPlayerPuzzleType();
         if (puzzleType == 2 && photonView.IsMine)
         {
-            Debug.Log("Player 2 manually activating puzzle");
             ActivatePuzzleImmediately();
         }
     }
@@ -237,7 +223,6 @@ public class SecondPlayerFinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObs
     [PunRPC]
     void SyncPuzzleActivation(bool active)
     {
-        Debug.Log($"SyncPuzzleActivation: {active}, IsMine: {photonView.IsMine}");
 
         isPuzzleActive = active;
 
@@ -305,7 +290,7 @@ public class SecondPlayerFinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObs
     [PunRPC]
     public void ResetPuzzle()
     {
-        isPuzzleActive = false; // Ensure it's not active
+        isPuzzleActive = false;
         isSkillCheckActive = false;
         puzzleComplete = false;
         firstTime = true;
@@ -313,21 +298,17 @@ public class SecondPlayerFinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObs
 
         if (skillCheck != null)
             skillCheck.SetActive(false);
-
-        Debug.Log("Player 2 puzzle reset complete - ready for reactivation");
     }
 
     [PunRPC]
     public void ForceActivatePuzzle()
     {
-        Debug.Log($"ForceActivatePuzzle RPC received - Player: {PhotonNetwork.LocalPlayer?.ActorNumber}, IsMine: {photonView.IsMine}");
 
         int puzzleType = NetworkManager.Instance.GetLocalPlayerPuzzleType();
         if (PhotonNetwork.LocalPlayer != null && puzzleType == 2 && !puzzleComplete)
         {
             if (!photonView.IsMine)
             {
-                Debug.Log("Player 2 requesting ownership for puzzle");
                 photonView.RequestOwnership();
                 StartCoroutine(DelayedActivation());
             }
@@ -335,10 +316,6 @@ public class SecondPlayerFinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObs
             {
                 ActivatePuzzleImmediately();
             }
-        }
-        else
-        {
-            Debug.Log($"ForceActivatePuzzle rejected - Player: {PhotonNetwork.LocalPlayer?.ActorNumber}, Complete: {puzzleComplete}, PuzzleType: {puzzleType}");
         }
     }
 
@@ -354,7 +331,6 @@ public class SecondPlayerFinalPuzzleHandler : MonoBehaviourPunCallbacks, IPunObs
         firstTime = true;
         lastSkillCheckTime = Time.time - skillCheckFrequency;
 
-        Debug.Log($"Player 2 puzzle ACTIVATED - isPuzzleActive: {isPuzzleActive}, firstTime: {firstTime}");
     }
 
     [PunRPC]

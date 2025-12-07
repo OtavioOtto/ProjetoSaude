@@ -4,7 +4,6 @@ using UnityEngine.Rendering.Universal;
 
 public class ReactivateEnergyHandler : MonoBehaviourPunCallbacks
 {
-    [SerializeField] private float speed = 2;
     public bool puzzleComplete;
     public bool puzzleActive;
     private Vector2 input;
@@ -23,7 +22,6 @@ public class ReactivateEnergyHandler : MonoBehaviourPunCallbacks
         wires = GameObject.Find("WirePuzzleCollider");
         generatorTwo.SetActive(false);
         lightGlobal = GameObject.Find("Global Light 2D").GetComponent<Light2D>();
-        // Apenas Morfeus executa
         int puzzleType = NetworkManager.Instance.GetLocalPlayerPuzzleType();
         if (puzzleType != 1)
         {

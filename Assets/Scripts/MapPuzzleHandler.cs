@@ -24,7 +24,6 @@ public class MapPuzzleHandler : MonoBehaviourPunCallbacks
     {
         photonView = GetComponent<PhotonView>();
 
-        // Encontrar o Rigidbody do objeto no mapa
         if (playerRb == null)
         {
             GameObject mapPlayer = GameObject.Find("Morfeus");
@@ -35,22 +34,14 @@ public class MapPuzzleHandler : MonoBehaviourPunCallbacks
         }
     }
 
-    // Método simples para receber movimento
     public void ReceiveMovementInput(Vector2 movementInput)
     {
-        Debug.Log($"[Alex] Recebeu movimento: {movementInput}");
         if (playerRb != null)
         {
             playerRb.linearVelocity = movementInput * speed;
-            Debug.Log($"[Alex] Aplicou velocidade: {movementInput * speed}");
-        }
-        else
-        {
-            Debug.LogWarning("[Alex] playerRb é null!");
         }
     }
 
-    // Receber movimento via RPC
     [PunRPC]
     void RPC_ReceiveMovement(Vector2 movementInput)
     {

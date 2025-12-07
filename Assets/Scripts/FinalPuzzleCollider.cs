@@ -10,7 +10,6 @@ public class FinalPuzzleCollider : MonoBehaviourPunCallbacks
     private void Start()
     {
         ui.SetActive(false);
-        // Ensure we have a reference to the handler
         if (handler == null)
         {
             handler = FindFirstObjectByType<FinalPuzzleHandler>();
@@ -27,7 +26,6 @@ public class FinalPuzzleCollider : MonoBehaviourPunCallbacks
     private void OnTriggerEnter2D(Collider2D collision)
     {
         int puzzleType = NetworkManager.Instance.GetLocalPlayerPuzzleType();
-        Debug.Log($"Trigger entered by: {collision.gameObject.name}, Tag: {collision.tag}, Puzzle type: {puzzleType}");
         if (collision.CompareTag("Player") && collision.GetComponent<PhotonView>().IsMine)
         {
             if (puzzleType == 1)
@@ -37,11 +35,9 @@ public class FinalPuzzleCollider : MonoBehaviourPunCallbacks
                     ui.SetActive(true);
                     playerInside = true;
 
-                    // Report to coordinator
                     if (FinalPuzzleCoordinator.Instance != null)
                     {
                         FinalPuzzleCoordinator.Instance.photonView.RPC("ReportPlayerInPosition", RpcTarget.All, 1, true);
-                        Debug.Log("Reported Player 1 in position to coordinator");
                     }
                 }
             }
@@ -63,7 +59,6 @@ public class FinalPuzzleCollider : MonoBehaviourPunCallbacks
                     ui.SetActive(false);
                     playerInside = false;
 
-                    // Report to coordinator
                     if (FinalPuzzleCoordinator.Instance != null)
                     {
                         FinalPuzzleCoordinator.Instance.photonView.RPC("ReportPlayerInPosition", RpcTarget.All, 1, false);

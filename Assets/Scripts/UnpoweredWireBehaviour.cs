@@ -24,9 +24,8 @@ public class UnpoweredWireBehaviour : MonoBehaviour
                 statsPower.connected = true;
                 statsPower.movable = true;
 
-                // Only copy X and Y, maintain powered wire's Z position
                 Vector3 connectedPos = transform.position;
-                connectedPos.z = statsPower.transform.position.z; // Keep powered wire's Z
+                connectedPos.z = statsPower.transform.position.z;
                 statsPower.connectedPosition = connectedPos;
 
                 stats.connected = true;

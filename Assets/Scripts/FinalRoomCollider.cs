@@ -16,9 +16,8 @@ public class FinalRoomCollider : MonoBehaviourPunCallbacks
     {
         dialogManager = DialogManager.Instance;
 
-        // Only enable for players
         int puzzleType = NetworkManager.Instance.GetLocalPlayerPuzzleType();
-        if (puzzleType == 0) // Not a valid player
+        if (puzzleType == 0)
         {
             enabled = false;
             return;

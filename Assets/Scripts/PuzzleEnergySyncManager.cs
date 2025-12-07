@@ -10,21 +10,17 @@ public class PuzzleEnergySyncManager : MonoBehaviourPunCallbacks
     private bool alexcraxyReady = false;
     private bool syncComplete = false;
 
-    // Chamado quando Morfeus ativa seu puzzle
     [PunRPC]
     public void MorfeusActivated()
     {
         morfeusReady = true;
-        Debug.Log("Morfeus activated puzzle");
         CheckSyncStatus();
     }
 
-    // Chamado quando AlexCraxy ativa seu puzzle
     [PunRPC]
     public void AlexCraxyActivated()
     {
         alexcraxyReady = true;
-        Debug.Log("AlexCraxy activated puzzle");
         CheckSyncStatus();
     }
 
@@ -33,9 +29,7 @@ public class PuzzleEnergySyncManager : MonoBehaviourPunCallbacks
         if (morfeusReady && alexcraxyReady && !syncComplete)
         {
             syncComplete = true;
-            Debug.Log("Both puzzles synchronized!");
 
-            // Ativar ambos os handlers
             photonView.RPC("ActivateBothHandlers", RpcTarget.All);
         }
     }
@@ -43,7 +37,6 @@ public class PuzzleEnergySyncManager : MonoBehaviourPunCallbacks
     [PunRPC]
     void ActivateBothHandlers()
     {
-        // Ativar handlers em ambos os clients
         MapPuzzleHandler mapHandler = FindFirstObjectByType<MapPuzzleHandler>();
         ReactivateEnergyHandler energyHandler = FindFirstObjectByType<ReactivateEnergyHandler>();
 
@@ -62,12 +55,12 @@ public class PuzzleEnergySyncManager : MonoBehaviourPunCallbacks
 
     public void LocalPlayerActivatedPuzzle(int playerType)
     {
-        if (playerType == 1) // Morfeus
+        if (playerType == 1)
         {
             photonView.RPC("MorfeusActivated", RpcTarget.Others);
             morfeusReady = true;
         }
-        else if (playerType == 2) // AlexCraxy
+        else if (playerType == 2)
         {
             photonView.RPC("AlexCraxyActivated", RpcTarget.Others);
             alexcraxyReady = true;

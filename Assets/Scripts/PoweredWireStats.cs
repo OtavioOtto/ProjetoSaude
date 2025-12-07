@@ -15,9 +15,4 @@ public class PoweredWireStats : MonoBehaviour
     {
         startPos = transform.position;
     }
-
-    void Update()
-    {
-        
-    }
 }
